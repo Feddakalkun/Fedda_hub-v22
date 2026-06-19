@@ -489,13 +489,13 @@ $ComfyUICommit = "a2840e75"  # Pinned stable - includes LTXAV 2.3 model support
 $ComfyDir = Join-Path $RootPath "ComfyUI"
 
 if (-not (Test-Path $ComfyDir)) {
-    Write-Step "Cloning ComfyUI..."
+    Write-Step "Cloning ComfyUI (this can take several minutes)..." "Yellow"
     $ErrorActionPreference = "Continue"
-    $cloneOut = & git clone https://github.com/comfyanonymous/ComfyUI.git "$ComfyDir" 2>&1 | Out-String
+    & git clone https://github.com/comfyanonymous/ComfyUI.git "$ComfyDir"
     $ErrorActionPreference = "Stop"
     Set-Location $ComfyDir
     $ErrorActionPreference = "Continue"
-    $checkoutOut = & git checkout $ComfyUICommit 2>&1 | Out-String
+    & git checkout $ComfyUICommit 2>&1 | Out-Null
     $ErrorActionPreference = "Stop"
     Set-Location $RootPath
     Write-Step "ComfyUI cloned + pinned to $ComfyUICommit" "Green"
@@ -639,8 +639,8 @@ $FrontendDir = Join-Path $RootPath "frontend"
 if (Test-Path $FrontendDir) {
     Set-Location $FrontendDir
     if (-not (Test-Path "node_modules")) {
-        Write-Step "Running npm install..."
-        & npm install 2>&1 | Out-Null
+        Write-Step "Running npm install (this can take 1-2 minutes)..." "Yellow"
+        & npm install
         Write-Step "Frontend dependencies installed." "Green"
     } else {
         Write-Step "node_modules already exists." "Green"
@@ -742,10 +742,12 @@ sys.exit(0 if ok else 1)
 "@
 $SmokeFile = Join-Path $RootPath "_smoke_test.py"
 Set-Content -Path $SmokeFile -Value $SmokeCode
-$SmokeResult = Start-Process -FilePath $VenvPy -ArgumentList "$SmokeFile" -NoNewWindow -Wait -PassThru
+Write-Step "Running smoke test (PyTorch + CUDA import check)..." "Cyan"
+& $VenvPy $SmokeFile
+$SmokeExitCode = $LASTEXITCODE
 Remove-Item $SmokeFile -Force
 
-if ($SmokeResult.ExitCode -eq 0) {
+if ($SmokeExitCode -eq 0) {
     Write-Step "All core imports verified!" "Green"
 } else {
     Write-Step "Some imports failed - check output above." "Yellow"
@@ -776,7 +778,7 @@ try {
 } catch {}
 
 $InstallReport += ""
-if ($SmokeResult.ExitCode -eq 0) { $InstallReport += "Smoke Test:      PASSED" } else { $InstallReport += "Smoke Test:      FAILED" }
+if ($SmokeExitCode -eq 0) { $InstallReport += "Smoke Test:      PASSED" } else { $InstallReport += "Smoke Test:      FAILED" }
 
 $InstallReport += ""
 $InstallReport += "Log Files:"
