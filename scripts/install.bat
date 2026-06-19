@@ -7,10 +7,6 @@ if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 for %%I in ("%SCRIPT_DIR%\..") do set "BASE_DIR=%%~fI"
 cd /d "%BASE_DIR%"
 
-:: Skip menu if re-launched as admin with install type argument
-if "%1"=="FULL" goto :run_full
-if "%1"=="LITE" goto :run_lite
-
 echo.
 echo ============================================================================
 echo   FEDDA INSTALLER
@@ -97,9 +93,9 @@ if %errorlevel% equ 0 (
 echo.
 echo   System Tools Found:
 if "%HAS_PYTHON%"=="1" (
-    echo     Python:   %PY_VERSION%  [optional for Lite; embedded 3.11.9 will be used]
+    echo     Python:   %PY_VERSION%  [optional; embedded 3.11.9 will be used if needed]
 ) else (
-    echo     Python:   not installed  [OK for Lite - embedded 3.11.9 will be downloaded]
+    echo     Python:   not installed  [embedded 3.11.9 will be downloaded]
 )
 if "%HAS_GIT%"=="1" (
     echo     Git:      %GIT_VERSION%
@@ -127,7 +123,7 @@ if "%HAS_OLLAMA%"=="1" (
 :: ============================================================================
 if exist "%BASE_DIR%\python_embeded\python.exe" (
     echo.
-    echo   [NOTE] Full install already detected (python_embeded found^).
+    echo   [NOTE] Install already detected (python_embeded found^).
     echo          Run UPDATE.bat from the install root to update, or delete python_embeded to reinstall.
     echo.
     pause
@@ -135,7 +131,7 @@ if exist "%BASE_DIR%\python_embeded\python.exe" (
 )
 if exist "%BASE_DIR%\venv\Scripts\python.exe" (
     echo.
-    echo   [NOTE] Lite install already detected (venv found^).
+    echo   [NOTE] Install already detected (venv found^).
     echo          Run UPDATE.bat from the install root to update, or delete venv to reinstall.
     echo.
     pause
@@ -157,106 +153,18 @@ if "%GPU_OK%"=="0" (
     exit /b 1
 )
 
-:: ============================================================================
-:: OFFER CHOICE
-:: ============================================================================
-echo.
-echo ============================================================================
-echo.
-echo   Choose installation type:
-echo.
-echo   [1] FULL INSTALL  (Recommended^)
-echo       Downloads Python, Node, Git, Ollama - everything included.
-echo       Nothing else needed. Fully portable.
-echo       ~15 GB total, takes longer.
-echo.
-
-if "%HAS_GIT%"=="1" if "%HAS_NODE%"=="1" if "%HAS_NPM%"=="1" (
-    echo   [2] LITE INSTALL  (Faster^)
-    echo       Uses embedded Python 3.11.9 (auto-download^).
-    echo       Uses your system Git + Node/npm.
-    echo       Smaller download, faster install.
-    echo.
-    set "LITE_AVAILABLE=1"
-) else (
-    echo   [2] LITE INSTALL  (Unavailable - missing system tools^)
-    echo       Requires Git, Node.js 18+, and npm installed.
-    echo.
-    set "LITE_AVAILABLE=0"
-)
-
-echo ============================================================================
-echo.
-
-:ask_choice
-set "CHOICE="
-set /p "CHOICE=  Enter 1 or 2 (default: 1): "
-if "%CHOICE%"=="" set "CHOICE=1"
-
-if "%CHOICE%"=="1" goto :do_full
-if "%CHOICE%"=="2" goto :do_lite
-
-echo   Invalid choice. Enter 1 or 2.
-goto :ask_choice
+:: Single main install (no Lite/Full choice anymore)
 
 :: ============================================================================
-:: FULL INSTALL (Portable)
+:: MAIN INSTALL (using Lite path - the one worked on most)
 :: ============================================================================
-:do_full
-echo.
-echo   Starting Full Install...
-echo.
-
-:: Request admin for portable install (needs to extract executables)
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo   Requesting Administrator privileges...
-    powershell -Command "Start-Process -FilePath '%~f0' -ArgumentList 'FULL' -Verb RunAs -Wait"
-    exit
-)
-
-:run_full
 for %%I in ("%~dp0\..") do set "BASE_DIR=%%~fI"
 set "SCRIPT_DIR=%~dp0"
 if "!SCRIPT_DIR:~-1!"=="\" set "SCRIPT_DIR=!SCRIPT_DIR:~0,-1!"
 cd /d "!BASE_DIR!"
 
 echo.
-echo   Starting Full Install...
-echo.
-
-powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install.ps1"
-
-if %errorlevel% neq 0 (
-    echo.
-    echo   [ERROR] Installation failed! Check logs\install_full_log.txt
-    echo.
-    pause
-    exit /b %errorlevel%
-)
-
-goto :done
-
-:: ============================================================================
-:: LITE INSTALL (System tools + venv)
-:: ============================================================================
-:do_lite
-if "%LITE_AVAILABLE%"=="0" (
-    echo.
-    echo   Lite install requires Git, Node.js, and npm.
-    echo   Install the missing tools or choose Full Install.
-    echo.
-    goto :ask_choice
-)
-
-:run_lite
-for %%I in ("%~dp0\..") do set "BASE_DIR=%%~fI"
-set "SCRIPT_DIR=%~dp0"
-if "!SCRIPT_DIR:~-1!"=="\" set "SCRIPT_DIR=!SCRIPT_DIR:~0,-1!"
-cd /d "!BASE_DIR!"
-
-echo.
-echo   Starting Lite Install...
+echo   Starting Main Install (Lite-based)...
 echo.
 
 powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install_lite.ps1"
