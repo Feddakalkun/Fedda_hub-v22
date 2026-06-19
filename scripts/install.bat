@@ -19,21 +19,17 @@ echo.
 :: SYSTEM SCAN
 :: ============================================================================
 
-:: GPU Check - nvidia-smi -L gives clean output on all driver versions
+:: GPU Check via WMI - avoids nvidia-smi console API side-effects on some systems
 set "GPU_OK=0"
 set "GPU_NAME=Not detected"
-for /f "tokens=1,* delims=:" %%a in ('nvidia-smi -L 2^>^&1 ^| findstr /i "^GPU"') do (
-    if "!GPU_OK!"=="0" (
+powershell -NoProfile -Command "$g = Get-CimInstance Win32_VideoController; foreach ($c in $g) { if ($c.Name -match 'NVIDIA') { $c.Name; break } }" > "%TEMP%\_fedda_gpu.tmp" 2>nul
+for /f "usebackq tokens=*" %%g in ("%TEMP%\_fedda_gpu.tmp") do (
+    if not "%%g"=="" (
         set "GPU_OK=1"
-        :: %%b = " NVIDIA GeForce RTX 3090 (UUID: ...)"
-        :: Extract name before the UUID parenthesis
-        set "_gpu=%%b"
-        for /f "tokens=1 delims=(" %%n in ("%%b") do (
-            :: Trim leading space
-            for /f "tokens=*" %%t in ("%%n") do set "GPU_NAME=%%t"
-        )
+        set "GPU_NAME=%%g"
     )
 )
+del "%TEMP%\_fedda_gpu.tmp" >nul 2>nul
 if "!GPU_OK!"=="1" (
     echo   GPU:      !GPU_NAME!
 ) else (
