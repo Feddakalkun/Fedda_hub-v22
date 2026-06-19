@@ -9,7 +9,7 @@ cd /d "%BASE_DIR%"
 
 echo.
 echo ============================================================================
-echo   FEDDA INSTALLER
+echo   FEDDAKALKUN INSTALLER
 echo ============================================================================
 echo.
 echo   Scanning your system...
@@ -93,7 +93,7 @@ if %errorlevel% equ 0 (
 echo.
 echo   System Tools Found:
 if "%HAS_PYTHON%"=="1" (
-    echo     Python:   %PY_VERSION%  [optional; embedded 3.11.9 will be used if needed]
+    echo     Python:   %PY_VERSION%  [embedded 3.11.9 will be used if needed]
 ) else (
     echo     Python:   not installed  [embedded 3.11.9 will be downloaded]
 )
@@ -117,6 +117,8 @@ if "%HAS_OLLAMA%"=="1" (
 ) else (
     echo     Ollama:   not installed
 )
+
+echo   Main install uses embedded Python + system Git/Node/npm where available.
 
 :: ============================================================================
 :: CHECK IF ALREADY INSTALLED
@@ -145,7 +147,7 @@ if "%GPU_OK%"=="0" (
     echo.
     echo   ============================================================
     echo   ERROR: No NVIDIA GPU detected!
-    echo   FEDDA requires an NVIDIA GPU with CUDA support.
+    echo   FEDDAKALKUN requires an NVIDIA GPU with CUDA support.
     echo   AMD and Intel GPUs are not supported.
     echo   ============================================================
     echo.
@@ -153,10 +155,11 @@ if "%GPU_OK%"=="0" (
     exit /b 1
 )
 
-:: Single main install (no Lite/Full choice anymore)
+:: Single main install
+:: Uses embedded Python + system Git/Node
 
 :: ============================================================================
-:: MAIN INSTALL (using Lite path - the one worked on most)
+:: MAIN INSTALL
 :: ============================================================================
 for %%I in ("%~dp0\..") do set "BASE_DIR=%%~fI"
 set "SCRIPT_DIR=%~dp0"
@@ -164,7 +167,7 @@ if "!SCRIPT_DIR:~-1!"=="\" set "SCRIPT_DIR=!SCRIPT_DIR:~0,-1!"
 cd /d "!BASE_DIR!"
 
 echo.
-echo   Starting Main Install (Lite-based)...
+echo   Starting Main Install...
 echo.
 
 powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install_lite.ps1"
