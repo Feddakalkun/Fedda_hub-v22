@@ -1,9 +1,17 @@
 # ============================================================================
-# FEDDA Lite Installer - Hybrid (Embedded Python + System Git/Node)
+# FEDDAKALKUN Main Installer - Hybrid (Embedded Python + System Git/Node)
 # ============================================================================
 # Assumes: Git, Node.js 18+, npm (Python is embedded automatically)
 # Creates: embedded Python runtime + ComfyUI + custom nodes + frontend + backend
 # ============================================================================
+
+param(
+    [switch]$Unattended
+)
+
+if ($env:FEDDA_UNATTENDED -eq "1") {
+    $Unattended = $true
+}
 
 $ErrorActionPreference = "Stop"
 $ScriptPath = $PSScriptRoot
@@ -176,15 +184,23 @@ sys.exit(0 if failed == 0 else 2)
 }
 
 
-Clear-Host
+if (-not $Unattended) {
+    Clear-Host
+}
+
 Write-Host ""
 Write-Host "  ========================================================" -ForegroundColor Cyan
 Write-Host "                                                          " -ForegroundColor Cyan
-Write-Host "         FEDDA LITE INSTALLER" -ForegroundColor Cyan
+Write-Host "         FEDDAKALKUN MAIN INSTALLER" -ForegroundColor Cyan
 Write-Host "         Uses embedded Python + system Git/Node" -ForegroundColor Cyan
 Write-Host "                                                          " -ForegroundColor Cyan
 Write-Host "  ========================================================" -ForegroundColor Cyan
 Write-Host ""
+
+if ($Unattended) {
+    Write-Host "  Unattended install - progress below, no input required." -ForegroundColor Gray
+    Write-Host ""
+}
 
 # --- Detect System Tools ---
 Write-Header "SYSTEM CHECK"
@@ -300,73 +316,83 @@ Write-Host ""
 if (-not $AllGood) {
     Write-Host "  MISSING REQUIREMENTS - install the tools marked in red above." -ForegroundColor Red
     Write-Host ""
-    Read-Host "  Press Enter to exit"
+    if (-not $Unattended) {
+        Read-Host "  Press Enter to exit"
+    }
     exit 1
 }
 
 # Ollama Check (Warning if not running)
 if (-not $OllamaRunning) {
-    Write-Host ""
-    Write-Host "  [!] OLLAMA NOT RUNNING" -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "  Ollama is used by the Ollama Models page and local model helpers. Without it:" -ForegroundColor Yellow
-    Write-Host "    - Ollama model management will show offline" -ForegroundColor Gray
-    Write-Host "    - Image and video workflows will still install normally" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "  Options:" -ForegroundColor White
-    if ($OllamaInstalled) {
-        Write-Host "    1) Continue install (Ollama will be used when you start it)" -ForegroundColor Gray
-        Write-Host "    2) Cancel and start Ollama first (recommended)" -ForegroundColor Gray
-        Write-Host "    3) Download & install embedded Ollama (portable, no system install needed)" -ForegroundColor Gray
+    if ($Unattended) {
+        Write-Step "Ollama not running - continuing without it (optional component)." "Yellow"
     } else {
-        Write-Host "    1) Continue install (skip Ollama for now)" -ForegroundColor Gray
-        Write-Host "    2) Cancel and download Ollama from https://ollama.ai" -ForegroundColor Gray
-        Write-Host "    3) Download & install embedded Ollama (portable, included)" -ForegroundColor Gray
-    }
-    Write-Host ""
-    $OllamaChoice = Read-Host "  Enter 1, 2, or 3 (default: 1)"
-    
-    if ($OllamaChoice -eq "2") {
         Write-Host ""
+        Write-Host "  [!] OLLAMA NOT RUNNING" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "  Ollama is used by the Ollama Models page and local model helpers. Without it:" -ForegroundColor Yellow
+        Write-Host "    - Ollama model management will show offline" -ForegroundColor Gray
+        Write-Host "    - Image and video workflows will still install normally" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "  Options:" -ForegroundColor White
         if ($OllamaInstalled) {
-            Write-Host "  Start Ollama with: ollama serve" -ForegroundColor Cyan
-            Write-Host "  Then run this installer again." -ForegroundColor White
+            Write-Host "    1) Continue install (Ollama will be used when you start it)" -ForegroundColor Gray
+            Write-Host "    2) Cancel and start Ollama first (recommended)" -ForegroundColor Gray
+            Write-Host "    3) Download & install embedded Ollama (portable, no system install needed)" -ForegroundColor Gray
         } else {
-            Write-Host "  Download from https://ollama.ai" -ForegroundColor Cyan
-            Write-Host "  Then run this installer again." -ForegroundColor White
+            Write-Host "    1) Continue install (skip Ollama for now)" -ForegroundColor Gray
+            Write-Host "    2) Cancel and download Ollama from https://ollama.ai" -ForegroundColor Gray
+            Write-Host "    3) Download & install embedded Ollama (portable, included)" -ForegroundColor Gray
         }
         Write-Host ""
-        Read-Host "  Press Enter to exit"
-        exit 0
-    }
-    elseif ($OllamaChoice -eq "3") {
-        $EmbeddedSuccess = Install-EmbeddedOllama -RootPath $RootPath -LogFile $LogFile
-        if (-not $EmbeddedSuccess) {
+        $OllamaChoice = Read-Host "  Enter 1, 2, or 3 (default: 1)"
+        
+        if ($OllamaChoice -eq "2") {
             Write-Host ""
-            Write-Host "  Failed to download embedded Ollama. Check your internet connection." -ForegroundColor Red
-            Write-Host "  You can still continue without it." -ForegroundColor Yellow
-        } else {
-            Write-Host "  Embedded Ollama is ready. It will start with run.bat." -ForegroundColor Green
-            $OllamaRunning = $true
+            if ($OllamaInstalled) {
+                Write-Host "  Start Ollama with: ollama serve" -ForegroundColor Cyan
+                Write-Host "  Then run this installer again." -ForegroundColor White
+            } else {
+                Write-Host "  Download from https://ollama.ai" -ForegroundColor Cyan
+                Write-Host "  Then run this installer again." -ForegroundColor White
+            }
+            Write-Host ""
+            Read-Host "  Press Enter to exit"
+            exit 0
         }
-    }
-    
-    if (-not $OllamaRunning) {
-        Write-Host "  Continuing install without Ollama..." -ForegroundColor Yellow
+        elseif ($OllamaChoice -eq "3") {
+            $EmbeddedSuccess = Install-EmbeddedOllama -RootPath $RootPath -LogFile $LogFile
+            if (-not $EmbeddedSuccess) {
+                Write-Host ""
+                Write-Host "  Failed to download embedded Ollama. Check your internet connection." -ForegroundColor Red
+                Write-Host "  You can still continue without it." -ForegroundColor Yellow
+            } else {
+                Write-Host "  Embedded Ollama is ready. It will start with run.bat." -ForegroundColor Green
+                $OllamaRunning = $true
+            }
+        }
+        
+        if (-not $OllamaRunning) {
+            Write-Host "  Continuing install without Ollama..." -ForegroundColor Yellow
+        }
     }
 }
 
 # Confirm
 Write-Host "  All system tools detected. Root: $RootPath" -ForegroundColor Gray
 Write-Host ""
-$Confirm = Read-Host "  Press ENTER to install, or N to cancel"
-if ($Confirm -eq "N" -or $Confirm -eq "n") { exit 0 }
+if ($Unattended) {
+    Write-Step "Starting main install automatically..." "Cyan"
+} else {
+    $Confirm = Read-Host "  Press ENTER to install, or N to cancel"
+    if ($Confirm -eq "N" -or $Confirm -eq "n") { exit 0 }
+}
 
 $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 # ============================================================================
 # 0. EMBED PYTHON 3.11.9 (always - eliminates version compatibility issues)
-# Lite still uses system Git + Node, but Python is always our known-good version
+# Main install uses system Git + Node; Python is always our known-good embedded version
 # ============================================================================
 Write-Header "STEP 0/7 - Embedded Python 3.11.9 (guaranteed compatible)"
 
@@ -404,7 +430,7 @@ if (-not (Test-Path $PyEmbedExe)) {
         Write-Step "Python 3.11.9 embedded and configured." "Green"
     } catch {
         Write-Step "ERROR: Could not download embedded Python. FEDDA needs a local Python runtime." "Red"
-        Write-Step "Check internet access, antivirus quarantine, or manually re-run INSTALL-LITE.bat." "Yellow"
+        Write-Step "Check internet access, antivirus quarantine, or manually re-run scripts\install.bat." "Yellow"
         if (Test-Path $PyEmbedDir) { Remove-Item $PyEmbedDir -Recurse -Force -ErrorAction SilentlyContinue }
         throw "Embedded Python download failed"
     }
@@ -726,45 +752,45 @@ if ($SmokeResult.ExitCode -eq 0) {
 }
 
 # ============================================================================
-# INSTALL SUMMARY REPORT (Lite)
+# INSTALL SUMMARY REPORT
 # ============================================================================
 $StopWatch.Stop()
 $Elapsed = $StopWatch.Elapsed
 $TimeStr = "{0:mm}m {0:ss}s" -f $Elapsed
 
-$LiteReport = @()
-$LiteReport += "Install Date:    $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-$LiteReport += "Install Mode:    Lite (Embedded Python + system Git/Node)"
-$LiteReport += "Install Path:    $RootPath"
-$LiteReport += "Install Time:    $TimeStr"
-$LiteReport += ""
+$InstallReport = @()
+$InstallReport += "Install Date:    $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$InstallReport += "Install Mode:    Main (Embedded Python + system Git/Node)"
+$InstallReport += "Install Path:    $RootPath"
+$InstallReport += "Install Time:    $TimeStr"
+$InstallReport += ""
 
-try { $PyVer = & $VenvPy --version 2>&1; $LiteReport += "Python:          $PyVer" } catch { $LiteReport += "Python:          UNKNOWN" }
-try { $PipVer = & $VenvPy -m pip --version 2>&1; $LiteReport += "Pip:             $($PipVer -replace ' from .*','')" } catch {}
-try { $NodeVer = & node --version 2>&1; $LiteReport += "Node.js:         $NodeVer" } catch {}
-try { $GitVer = & git --version 2>&1; $LiteReport += "Git:             $GitVer" } catch {}
+try { $PyVer = & $VenvPy --version 2>&1; $InstallReport += "Python:          $PyVer" } catch { $InstallReport += "Python:          UNKNOWN" }
+try { $PipVer = & $VenvPy -m pip --version 2>&1; $InstallReport += "Pip:             $($PipVer -replace ' from .*','')" } catch {}
+try { $NodeVer = & node --version 2>&1; $InstallReport += "Node.js:         $NodeVer" } catch {}
+try { $GitVer = & git --version 2>&1; $InstallReport += "Git:             $GitVer" } catch {}
 
 try {
     $TorchInfo = & $VenvPy -c "import torch; print(f'PyTorch {torch.__version__} | CUDA: {torch.cuda.is_available()} | Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ""N/A""}')" 2>&1
-    $LiteReport += "PyTorch:         $TorchInfo"
+    $InstallReport += "PyTorch:         $TorchInfo"
 } catch {}
 
-$LiteReport += ""
-if ($SmokeResult.ExitCode -eq 0) { $LiteReport += "Smoke Test:      PASSED" } else { $LiteReport += "Smoke Test:      FAILED" }
+$InstallReport += ""
+if ($SmokeResult.ExitCode -eq 0) { $InstallReport += "Smoke Test:      PASSED" } else { $InstallReport += "Smoke Test:      FAILED" }
 
-$LiteReport += ""
-$LiteReport += "Log Files:"
-$LiteReport += "  Report:  $(Join-Path $LogsDir 'install_report.txt')"
-$LiteReport += "  Full:    $(Join-Path $LogsDir 'install_fast_log.txt')"
+$InstallReport += ""
+$InstallReport += "Log Files:"
+$InstallReport += "  Report:  $(Join-Path $LogsDir 'install_report.txt')"
+$InstallReport += "  Full:    $(Join-Path $LogsDir 'install_fast_log.txt')"
 
 # Write report
 $LogsDir = Join-Path $RootPath "logs"
 if (-not (Test-Path $LogsDir)) { New-Item -ItemType Directory -Path $LogsDir | Out-Null }
 $ReportFile = Join-Path $LogsDir "install_report.txt"
-$LiteReport | Set-Content -Path $ReportFile -Encoding UTF8
+$InstallReport | Set-Content -Path $ReportFile -Encoding UTF8
 
 Write-Host ""
-foreach ($Line in $LiteReport) { Write-Host "  $Line" }
+foreach ($Line in $InstallReport) { Write-Host "  $Line" }
 
 Write-Host ""
 Write-Host "  ========================================================" -ForegroundColor Green

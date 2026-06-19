@@ -128,7 +128,7 @@ if exist "%BASE_DIR%\python_embeded\python.exe" (
     echo   [NOTE] Install already detected (python_embeded found^).
     echo          Run UPDATE.bat from the install root to update, or delete python_embeded to reinstall.
     echo.
-    pause
+    if not "%FEDDA_UNATTENDED%"=="1" pause
     exit /b 0
 )
 if exist "%BASE_DIR%\venv\Scripts\python.exe" (
@@ -136,7 +136,7 @@ if exist "%BASE_DIR%\venv\Scripts\python.exe" (
     echo   [NOTE] Install already detected (venv found^).
     echo          Run UPDATE.bat from the install root to update, or delete venv to reinstall.
     echo.
-    pause
+    if not "%FEDDA_UNATTENDED%"=="1" pause
     exit /b 0
 )
 
@@ -151,7 +151,7 @@ if "%GPU_OK%"=="0" (
     echo   AMD and Intel GPUs are not supported.
     echo   ============================================================
     echo.
-    pause
+    if not "%FEDDA_UNATTENDED%"=="1" pause
     exit /b 1
 )
 
@@ -170,13 +170,17 @@ echo.
 echo   Starting Main Install...
 echo.
 
-powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install.ps1"
+if "%FEDDA_UNATTENDED%"=="1" (
+    powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install.ps1" -Unattended
+) else (
+    powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install.ps1"
+)
 
 if %errorlevel% neq 0 (
     echo.
     echo   [ERROR] Installation failed! Check logs\install_fast_log.txt
     echo.
-    pause
+    if not "%FEDDA_UNATTENDED%"=="1" pause
     exit /b %errorlevel%
 )
 
@@ -204,5 +208,5 @@ if exist "%BASE_DIR%\logs\install_report.txt" (
     echo   --- END REPORT ---
     echo.
 )
-pause
+if not "%FEDDA_UNATTENDED%"=="1" pause
 
