@@ -1,8 +1,8 @@
-﻿# FEDDA Hub v21
+﻿# FEDDA Hub v22
 
-FEDDA Hub v21 is the modular distribution branch for a workflow-first local AI studio.
+FEDDA Hub v22 is the modular distribution branch for a workflow-first local AI studio.
 
-## v21 scope
+## v22 scope
 
 The core UI stays focused on five areas:
 
@@ -20,7 +20,7 @@ Current module ownership lives in:
 config\modules.json
 ```
 
-v21 builds on the clean repo + install separation. The modular foundation (core + boosters) is in place, with Venice.ai integration (image generation + agent chat) added in recent updates. Modules describe ownership and guide installer node selection.
+v22 builds on the clean repo + install separation. The modular foundation (core + boosters) is in place. Modules describe ownership and guide installer node selection. RunPod and Docker deployment support is included for easy cloud usage.
 
 ## Install layout
 
@@ -28,7 +28,7 @@ For local staging, put the one-click installer in any folder you want to use as 
 
 ```text
 <your chosen folder>\
-  FEDDA_v21_Installer.bat
+  FEDDA_v22_Installer.bat
   app\                 # local runtime install target, ignored by git
   logs\                # installer logs
 ```
@@ -36,19 +36,24 @@ For local staging, put the one-click installer in any folder you want to use as 
 The single-file installer clones or updates:
 
 ```text
-https://github.com/Feddakalkun/Fedda_hub-v21
+https://github.com/Feddakalkun/Fedda_hub-v22
 ```
 
-into `install\app`, then runs `scripts\install.bat LITE`.
+into `app/`, then runs `scripts\install.bat LITE`.
 
 Current active features include:
-- Image + Video Studios
+- Image + Video Studios (with visual card picker)
 - Gallery
 - LoRA & Character management
 - Ollama models
-- **Venice.ai** (Image generation + full Agent chat with web search, vision, reasoning)
+- ControlNet (Depth + OpenPose)
+- **Venice.ai** integration where applicable
 
-That same repository is the active v21 development remote.
+That same repository is the active v22 development remote.
+
+## RunPod / Docker Support
+
+The `runpod/` folder and Docker files make it easy to deploy on RunPod.io or run in containers. More details in `runpod/TEMPLATE_SETUP.md` and `readme/RUNPOD_SETUP.md`.
 
 ## Runtime policy
 
