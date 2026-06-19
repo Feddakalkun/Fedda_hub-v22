@@ -8,7 +8,7 @@
 #          and any HTTPS calls from Python inside the portable environment.
 #
 # Called automatically by:
-#   - scripts/install_lite.ps1 (Lite / recommended path)
+#   - scripts/install.ps1 (single main install)
 #   - scripts/install.ps1    (Full portable path)
 #   - Can be called manually from run.bat on first launch as safety net
 #

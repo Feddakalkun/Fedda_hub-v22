@@ -170,7 +170,7 @@ echo.
 echo   Starting Main Install...
 echo.
 
-powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install_lite.ps1"
+powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\install.ps1"
 
 if %errorlevel% neq 0 (
     echo.
