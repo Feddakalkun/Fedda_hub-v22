@@ -22,7 +22,7 @@ echo.
 :: GPU Check - nvidia-smi -L gives clean output on all driver versions
 set "GPU_OK=0"
 set "GPU_NAME=Not detected"
-for /f "tokens=1,* delims=:" %%a in ('nvidia-smi -L 2^>nul') do (
+for /f "tokens=1,* delims=:" %%a in ('nvidia-smi -L 2^>^&1 ^| findstr /i "^GPU"') do (
     if "!GPU_OK!"=="0" (
         set "GPU_OK=1"
         :: %%b = " NVIDIA GeForce RTX 3090 (UUID: ...)"
