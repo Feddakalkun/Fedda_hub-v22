@@ -95,6 +95,10 @@ try {
 # 3. RUN FULL MAINTENANCE (nodes, deps, frontend)
 # ============================================================================
 $UpdateLogic = Join-Path $ScriptPath "update_logic.ps1"
+if (-not (Test-Path $UpdateLogic)) {
+    # Fallback: PSScriptRoot can be empty in some invocation paths; derive from RootPath
+    $UpdateLogic = Join-Path $RootPath "scripts\update_logic.ps1"
+}
 if (Test-Path $UpdateLogic) {
     if (-not $SilentMode) {
         Write-Host "`n  Running full maintenance (nodes, deps, frontend)..." -ForegroundColor Yellow
@@ -106,9 +110,7 @@ if (Test-Path $UpdateLogic) {
         . "$UpdateLogic"
     }
 } else {
-    if (-not $SilentMode) {
-        Write-Host "`n  [WARN] update_logic.ps1 not found - skipping node/dep maintenance." -ForegroundColor Yellow
-    }
+    Write-Host "`n  [WARN] update_logic.ps1 not found (checked: $UpdateLogic)" -ForegroundColor Yellow
 }
 
 # ============================================================================
