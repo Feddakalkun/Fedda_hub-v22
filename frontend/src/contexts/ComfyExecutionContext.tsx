@@ -55,6 +55,8 @@ interface ComfyExecutionContextType {
     queueWorkflow: (workflow: Record<string, any>) => Promise<string>;
     // Register a pre-built node map (used when submitting via /api/generate instead of queueWorkflow)
     registerNodeMap: (nodeMap: Record<string, NodeInfo>) => void;
+    // Start executing state immediately (use when submitting via /api/generate so the bar shows during model loading)
+    startExecution: () => void;
     cancelExecution: () => Promise<void>;
     clearOutputs: () => void;
 }
@@ -296,6 +298,32 @@ export const ComfyExecutionProvider = ({ children }: { children: React.ReactNode
         return () => disconnect();
     }, [transitionToDone]);
 
+    // Transition immediately to 'executing' when pages submit via /api/generate.
+    // Without this, the top bar stays idle during long GGUF model loading phases
+    // because ComfyUI's event loop is blocked and sends no WebSocket events until sampling starts.
+    const startExecution = useCallback(() => {
+        cancelledRef.current = false;
+        if (doneTimerRef.current) {
+            clearTimeout(doneTimerRef.current);
+            doneTimerRef.current = null;
+        }
+        executedNodesRef.current.clear();
+        setCompletedNodes(0);
+        setOutputReadyCount(0);
+        setLastOutputImages([]);
+        setLastOutputVideos([]);
+        if (prevPreviewRef.current) { URL.revokeObjectURL(prevPreviewRef.current); prevPreviewRef.current = null; }
+        setPreviewUrl(null);
+        setState('executing');
+        stateRef.current = 'executing';
+        setCurrentNodeName('Loading...');
+        setCurrentNodeId(null);
+        setProgress(0);
+        setError(null);
+        setIsDownloaderNode(false);
+        setCurrentDownloaderInfo(null);
+    }, []);
+
     // Cancel/interrupt the current execution
     const cancelExecution = useCallback(async () => {
         try {
@@ -418,6 +446,7 @@ export const ComfyExecutionProvider = ({ children }: { children: React.ReactNode
             overallProgress,
             queueWorkflow,
             registerNodeMap: (nm) => { nodeMapRef.current = nm; },
+            startExecution,
             cancelExecution,
             clearOutputs,
         }}>

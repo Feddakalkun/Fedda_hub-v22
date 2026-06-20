@@ -203,6 +203,7 @@ export function Wan21Scail2Page() {
     lastOutputVideos,
     outputReadyCount,
     registerNodeMap,
+    startExecution,
   } = useComfyExecution();
 
   const prevVideoCountRef = useRef(0);
@@ -405,6 +406,7 @@ export function Wan21Scail2Page() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.detail || 'SCAIL-2 failed');
       setPendingPromptId(String(data.prompt_id));
+      startExecution();
     } catch (err: any) {
       setIsGenerating(false);
       toast(err.message || 'SCAIL-2 failed', 'error');
