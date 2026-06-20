@@ -15,6 +15,7 @@ import shutil
 import uuid
 from pathlib import Path
 from typing import Optional, Dict, Any, List
+import asyncio
 import re
 import time
 from urllib.parse import urlparse
@@ -71,6 +72,7 @@ OUTPUT_DIR = COMFY_DIR / "output"
 
 COMFY_URL = os.environ.get("COMFY_URL", "http://127.0.0.1:8199")
 MOCKINGBIRD_URL = os.environ.get("MOCKINGBIRD_URL", "http://127.0.0.1:8020")
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 AGENT_DB_PATH = CONFIG_DIR / "agent_memory.db"
 
 def _comfy_proxy_error() -> str:
@@ -142,7 +144,9 @@ def _load_workflow_memory() -> Dict[str, List[Dict[str, Any]]]:
 
 def _save_workflow_memory(data: Dict[str, List[Dict[str, Any]]]) -> None:
     WORKFLOW_MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    WORKFLOW_MEMORY_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp = WORKFLOW_MEMORY_PATH.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(tmp, WORKFLOW_MEMORY_PATH)
 
 
 def _workflow_memory_entries(workflow_id: str, limit: int = 8) -> List[Dict[str, Any]]:
@@ -1396,9 +1400,9 @@ async def chat_tts(req: TtsRequest):
                     "fallback_notice": fallback_notice,
                 }
             if state in {"running", "pending", "not_found"}:
-                time.sleep(0.8)
+                await asyncio.sleep(0.8)
                 continue
-            time.sleep(0.8)
+            await asyncio.sleep(0.8)
 
         return {"success": False, "error": "Timed out waiting for local TTS output."}
     except requests_exceptions.ConnectionError:
@@ -1470,7 +1474,6 @@ async def refresh_models():
 # ─────────────────────────────────────────────
 # Ollama — Prompt Assistant & Image Captioning
 # ─────────────────────────────────────────────
-OLLAMA_URL = "http://localhost:11434"
 OLLAMA_RECOMMENDED_TEXT_MODEL = os.environ.get("OLLAMA_RECOMMENDED_TEXT_MODEL", "cognitivecomputations/dolphin-2.9.3-mistral-nemo-12b")
 
 OLLAMA_SYSTEM_PROMPTS: Dict[str, str] = {
