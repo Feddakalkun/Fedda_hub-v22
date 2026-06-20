@@ -13,7 +13,8 @@ export type SourceModuleId =
   | 'qwen-image'
   | 'wan-video'
   | 'ltx-video'
-  | 'flux-klein';
+  | 'flux-klein'
+  | 'flux-klein-uncensored';
 
 export interface FeddaModule {
   id: string;
@@ -46,7 +47,7 @@ export const FEDDA_MODULES: FeddaModule[] = [
   {
     id: 'image-studio',
     sourceModuleId: 'z-image-core',
-    requiresAnyOf: ['z-image-core', 'z-image-advanced', 'sdxl-pack', 'qwen-image', 'chroma-image', 'firered-image', 'flux-klein'],
+    requiresAnyOf: ['z-image-core', 'z-image-advanced', 'sdxl-pack', 'qwen-image', 'chroma-image', 'firered-image', 'flux-klein', 'flux-klein-uncensored'],
     label: 'Image Studio',
     description: 'Text, reference and LoRA-driven image workflows synced with ComfyUI.',
     area: 'home',
@@ -227,6 +228,20 @@ export const FEDDA_MODULES: FeddaModule[] = [
     defaultTab: 'flux-txt2img',
     Icon: Sparkles,
     card: veniceCard(11),
+  },
+  {
+    id: 'flux-klein-uncensored',
+    sourceModuleId: 'flux-klein-uncensored',
+    label: 'FLUX KLEIN UNCENSORED',
+    description: 'FLUX KLEIN UNCENSORED image generation.',
+    area: 'image',
+    pack: 'booster',
+
+    tabs: ['flux', 'flux-txt2img'],
+    workflows: ['flux2klein-uncensored-txt2img'],
+    defaultTab: 'flux-txt2img',
+    Icon: Sparkles,
+    card: veniceCard(31),
   },
   {
     id: 'firered-image-edit',

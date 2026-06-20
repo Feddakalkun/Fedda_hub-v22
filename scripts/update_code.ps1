@@ -58,10 +58,12 @@ if (-not (Test-Path (Join-Path $RootPath ".git"))) {
 if (-not $SilentMode) {
     Write-Host "`n  Pulling latest code from GitHub..." -ForegroundColor Yellow
     # Stash local changes to protect uncommitted work (including new files like workflows)
-    $hasChanges = & $GitExe status --porcelain
+    $hasChanges = & $GitExe status --porcelain 2>$null
     if ($hasChanges) {
         if (-not $SilentMode) { Write-Host "  Stashing local changes to protect them..." -ForegroundColor Yellow }
+        $ErrorActionPreference = "Continue"
         & $GitExe stash push -u -m "auto-stash-before-update-$(Get-Date -Format yyyyMMddHHmmss)" 2>&1 | Out-Null
+        $ErrorActionPreference = "Stop"
     }
 }
 
