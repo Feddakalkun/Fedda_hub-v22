@@ -4,6 +4,7 @@ import { useComfyExecution } from '../contexts/ComfyExecutionContext';
 import { comfyService } from '../services/comfyService';
 import { usePersistentState } from './usePersistentState';
 import { useToast } from '../components/ui/Toast';
+import type { GenerateResponse, GenerateStatusResponse, NodeMapResponse } from '../types/api';
 
 type OutputKind = 'video';
 
@@ -78,7 +79,7 @@ export const useWorkflowRun = ({
     setPendingPromptId(null);
 
     fetch(`${BACKEND_API.BASE_URL}${BACKEND_API.ENDPOINTS.GENERATE_STATUS}/${promptId}`)
-      .then((response) => response.json())
+      .then((r) => r.json() as Promise<GenerateStatusResponse>)
       .then((data) => {
         if (outputKind === 'video' && data.status === 'completed' && data.videos?.length) {
           collectUrls(data.videos.map(outputUrl));
@@ -99,7 +100,7 @@ export const useWorkflowRun = ({
     setIsGenerating(true);
 
     fetch(`${BACKEND_API.BASE_URL}/api/workflow/node-map/${workflowId}`)
-      .then((response) => response.json())
+      .then((r) => r.json() as Promise<NodeMapResponse>)
       .then((data) => {
         if (data.success) registerNodeMap(data.node_map);
       })
@@ -111,18 +112,15 @@ export const useWorkflowRun = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           workflow_id: workflowId,
-          params: {
-            ...params,
-            client_id: (comfyService as any).clientId,
-          },
+          params: { ...params, client_id: comfyService.clientId },
         }),
       });
-      const data = await response.json();
+      const data = await response.json() as GenerateResponse;
       if (!data.success) {
         throw new Error(data.detail || 'Failed to start generation');
       }
       setPendingPromptId(data.prompt_id);
-      return data.prompt_id as string;
+      return data.prompt_id;
     } catch (err: any) {
       toast(err.message || 'Failed to generate', 'error');
       setIsGenerating(false);

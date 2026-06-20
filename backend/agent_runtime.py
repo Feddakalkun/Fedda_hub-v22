@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import shutil
@@ -9,6 +10,8 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 AgentLLMFn = Callable[[str, List[Dict[str, Any]], Optional[str]], str]
@@ -254,9 +257,11 @@ class AgentRuntime:
             "Return 1-8 actions max. Use relative sandbox paths. No markdown."
         )
         try:
+            logger.info("Agent planning: %r", user_message[:120])
             raw = self.llm_fn(user, history[-24:], profile)
             parsed = self._extract_json_object(raw)
             if not parsed:
+                logger.warning("Agent LLM returned unparseable response; using fallback")
                 return self._fallback_actions(user_message)
             actions = parsed.get("actions")
             if not isinstance(actions, list):
@@ -570,13 +575,19 @@ class AgentRuntime:
             tool_name = str(row["tool_name"])
             args = json.loads(str(row["args_json"] or "{}"))
             try:
+                logger.info("Agent action: %s %s", tool_name, {k: v for k, v in args.items() if k != "content"})
                 result = self._execute_action(tool_name, args, policy)
                 status = "executed" if bool(result.get("success")) else "failed"
                 error_text = "" if status == "executed" else str(result.get("error") or "Execution failed.")
+                if status == "failed":
+                    logger.warning("Agent action failed: %s -- %s", tool_name, error_text)
+                else:
+                    logger.debug("Agent action succeeded: %s", tool_name)
             except Exception as exc:
                 result = {"success": False, "error": str(exc)}
                 status = "failed"
                 error_text = str(exc)
+                logger.error("Agent action exception: %s -- %s", tool_name, exc)
             with self._connect() as conn:
                 conn.execute(
                     """

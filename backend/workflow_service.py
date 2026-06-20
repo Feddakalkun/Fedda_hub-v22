@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import sys
 import uuid
@@ -13,6 +14,8 @@ if sys.platform == "win32":
         sys.stderr.reconfigure(encoding="utf-8-sig")
     except Exception:
         pass
+
+logger = logging.getLogger(__name__)
 
 class WorkflowService:
     def __init__(self, workflows_dir: str):
@@ -123,7 +126,7 @@ class WorkflowService:
 
         # Convert to API format early for reliable LoRA injection (especially rgthree)
         if not is_api:
-            print("[WorkflowService] Converting full workflow format to API format before injection")
+            logger.debug("Converting UI workflow to API format before injection")
             workflow = self.convert_ui_to_api(workflow)
             is_api = True
 
@@ -132,7 +135,7 @@ class WorkflowService:
             self._sanitize_flux2klein_workflow(workflow)
 
         # 1. Inject parameters
-        print(f"[WorkflowService] Preparing payload. is_api={is_api}")
+        logger.debug("Preparing payload for %r (is_api=%s)", workflow_id, is_api)
 
         # Ensure LoRA placeholders are handled even when frontend sends no `loras`.
         # Without this, workflows with a baked-in default LoRA name can fail validation
@@ -140,9 +143,7 @@ class WorkflowService:
         effective_params = dict(user_params or {})
 
         if workflow_id == "flux2klein-txt2img":
-            print("========== FLUX2-KLEIN PAYLOAD PREP (v2api) ==========")
-            print(f"  loras param received: {effective_params.get('loras', 'NOT PRESENT')}")
-            print("  >>> LOOK FOR THIS IN BACKEND LOGS - RGTHREE INJECTION SHOULD FOLLOW <<<")
+            logger.debug("FLUX2-KLEIN payload prep: loras=%s", effective_params.get("loras", "NOT PRESENT"))
         for input_key, input_info in mapping.get("inputs", {}).items():
             if input_info.get("type") == "loras" and input_key not in effective_params:
                 effective_params[input_key] = []
@@ -156,7 +157,7 @@ class WorkflowService:
                 else:
                     target_node_ids = [str(input_info["node_id"])]
                 
-                print(f"  > Injecting '{param_key}' -> Nodes {target_node_ids} (value: {param_value})")
+                logger.debug("  Injecting %r -> nodes %s", param_key, target_node_ids)
 
                 if input_info.get("type") == "nsfw_toggle":
                     # When NSFW is disabled, turn off all non-base LoRA slots in every
@@ -170,16 +171,16 @@ class WorkflowService:
                             for slot_key, slot_val in wf_node.get("inputs", {}).items():
                                 if slot_key.startswith("lora_") and slot_key != "lora_1" and isinstance(slot_val, dict):
                                     slot_val["on"] = False
-                        print(f"  [OK] NSFW disabled Ã¢â‚¬â€ all non-base LoRA slots turned off")
+                        logger.debug("NSFW disabled -- all non-base LoRA slots turned off")
                     else:
-                        print(f"  [OK] NSFW enabled Ã¢â‚¬â€ workflow LoRA slots unchanged")
+                        logger.debug("NSFW enabled -- workflow LoRA slots unchanged")
                     continue
 
                 if input_info.get("type") == "loras" and isinstance(param_value, list):
                     # Safety filter for FLUX2-Klein: only allow LoRAs trained for this specific model
                     # FLUX.1-dev LoRAs have different dimensions and cause matmul errors.
                     if workflow_id == "flux2klein-txt2img":
-                        print(f"  [FLUX2-KLEIN] Raw loras from UI: {[l.get('name') for l in param_value]}")
+                        logger.debug("FLUX2-KLEIN raw loras from UI: %s", [l.get('name') for l in param_value])
                         before = len(param_value)
                         # Use robust normalization to avoid Windows backslash vs forward slash issues
                         param_value = [
@@ -188,11 +189,11 @@ class WorkflowService:
                         ]
                         filtered = before - len(param_value)
                         if filtered > 0:
-                            print(f"  [FLUX2-Klein] Blocked {filtered} incompatible LoRA(s) Ã¢â‚¬â€ only flux2klein/ prefix allowed on this model")
+                            logger.info("FLUX2-KLEIN blocked %d incompatible LoRA(s) -- only flux2klein/ prefix allowed", filtered)
 
                     node_id = target_node_ids[0]
                     if node_id not in workflow:
-                        print(f"  [WARN] LoRA placeholder node {node_id} not found")
+                        logger.warning("LoRA placeholder node %s not found in workflow", node_id)
                         continue
 
                     placeholder = workflow[node_id]
@@ -200,11 +201,7 @@ class WorkflowService:
 
                     # Special handling for rgthree Power Lora Loader (used by FLUX2-Klein and some Qwen flows)
                     if workflow_id == "flux2klein-txt2img":
-                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                        print("!!! FLUX2-KLEIN RGTHREE LORA INJECTION PATH HIT !!!")
-                        print(f"!!! Node ID from mapping: {node_id}")
-                        print(f"!!! Class type of node: {class_type}")
-                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                        logger.debug("FLUX2-KLEIN rgthree injection: node_id=%s class_type=%s", node_id, class_type)
 
                     if class_type == "Power Lora Loader (rgthree)":
                         active_loras = [l for l in param_value if l.get("name")]
@@ -232,16 +229,10 @@ class WorkflowService:
                                 }
                                 inputs[slot] = slot_data
                                 if workflow_id == "flux2klein-txt2img":
-                                    print(f"    -> Writing to {slot}: {slot_data}")
-                            print(f"  [OK] Injected {len(active_loras)} LoRA(s) into rgthree Power Lora Loader {node_id}: {[l['name'] for l in active_loras]}")
-                            if workflow_id == "flux2klein-txt2img":
-                                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                                print(f"  [FLUX2-KLEIN LORA INJECTION SUCCESS] Node: {node_id}")
-                                print(f"  LoRAs injected: {[l['name'] for l in active_loras]}")
-                                print(f"  Final keys on node: {list(inputs.keys())}")
-                                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                                    logger.debug("Writing %s: %s", slot, slot_data)
+                            logger.info("Injected %d LoRA(s) into rgthree Power Lora Loader %s: %s", len(active_loras), node_id, [l['name'] for l in active_loras])
                         else:
-                            print(f"  [OK] No LoRAs sent Ã¢â‚¬â€ cleared lora slots on rgthree node {node_id}")
+                            logger.debug("No LoRAs sent -- cleared lora slots on rgthree node %s", node_id)
                         continue
 
                     # Classic path: Dynamic LoRA chain for standard LoraLoader / LoraLoaderModelOnly
@@ -299,7 +290,7 @@ class WorkflowService:
                                 if isinstance(val, list) and len(val) == 2 and str(val[0]) == node_id:
                                     node["inputs"][key] = [last_id, val[1]]
 
-                        print(f"  [OK] Injected {len(active_loras)} LoRA(s): {[l['name'] for l in active_loras]}")
+                        logger.info("Injected %d LoRA(s): %s", len(active_loras), [l['name'] for l in active_loras])
                     continue
 
                 if input_info.get("type") == "seed_sequence":
@@ -314,7 +305,7 @@ class WorkflowService:
                                 workflow[node_id]["inputs"] = {}
                             workflow[node_id]["inputs"][input_key] = base_seed + idx
                         else:
-                            print(f"    [WARN] Node {node_id} NOT FOUND in workflow!")
+                            logger.warning("Node %s NOT FOUND in workflow", node_id)
                     continue
 
                 per_node_values = None
@@ -340,7 +331,7 @@ class WorkflowService:
                             for input_key in target_input_keys:
                                 workflow[node_id]["inputs"][input_key] = per_node_values[idx] if per_node_values is not None else param_value
                         else:
-                            print(f"    [WARN] Node {node_id} NOT FOUND in workflow!")
+                            logger.warning("Node %s NOT FOUND in workflow", node_id)
                 else:
                     # UI Format Injection
                     w_idx = input_info.get("widget_index")
@@ -352,10 +343,10 @@ class WorkflowService:
                                 if "widgets_values" in node and w_idx is not None:
                                     if w_idx < len(node["widgets_values"]):
                                         node["widgets_values"][w_idx] = param_value
-                                        print(f"    [OK] Updated widget[{w_idx}]")
+                                        logger.debug("Updated widget[%d]", w_idx)
                                 break
                         if not found:
-                            print(f"    [WARN] Node {node_id} NOT FOUND in UI nodes!")
+                            logger.warning("Node %s NOT FOUND in UI nodes", node_id)
         
         # 2. Convert to final API format for ComfyUI if needed
         if not is_api:
@@ -400,7 +391,7 @@ class WorkflowService:
             "ok": not errors,
             "errors": errors,
         }
-        print(f"[WorkflowService] WAN21 payload verification: {debug}")
+        logger.debug("WAN21 payload verification: %s", debug)
         return debug
 
     def verify_zimage_controlnet_payload(self, workflow: Dict[str, Any], user_params: Dict[str, Any]) -> Dict[str, Any]:
@@ -434,7 +425,7 @@ class WorkflowService:
             "ok": not errors,
             "errors": errors,
         }
-        print(f"[WorkflowService] Z-Image ControlNet payload verification: {debug}")
+        logger.debug("Z-Image ControlNet payload verification: %s", debug)
         return debug
 
     def verify_flux2klein_payload(self, workflow: Dict[str, Any], user_params: Dict[str, Any]) -> Dict[str, Any]:
@@ -464,7 +455,7 @@ class WorkflowService:
             "ok": not errors,
             "errors": errors,
         }
-        print(f"[WorkflowService] FLUX2-KLEIN payload verification: {debug}")
+        logger.debug("FLUX2-KLEIN payload verification: %s", debug)
         return debug
 
     def _trim_qwen_multi_angle_outputs(self, workflow: dict, user_params: Dict[str, Any]) -> None:
@@ -478,7 +469,7 @@ class WorkflowService:
         for node_id in save_nodes[shot_count:]:
             if node_id in workflow:
                 workflow.pop(node_id, None)
-        print(f"  [Qwen Multiangle] Active output shots: {shot_count}")
+        logger.debug("Qwen Multiangle active output shots: %d", shot_count)
 
     def _sanitize_flux2klein_workflow(self, workflow: dict) -> None:
         """
@@ -491,7 +482,7 @@ class WorkflowService:
             if "inputs" not in node:
                 node["inputs"] = {}
             node["inputs"]["styles"] = "No Style"
-            print("  [FLUX2-Klein] Sanitized Load Styles CSV -> 'No Style'")
+            logger.debug("FLUX2-KLEIN sanitized Load Styles CSV -> No Style")
 
         # Fix Text Concatenate node 201 (was losing delimiter/clean_whitespace after UIÃ¢â€ â€™API conversion)
         if "201" in workflow:
@@ -502,7 +493,7 @@ class WorkflowService:
                 node["inputs"]["delimiter"] = ", "
             if "clean_whitespace" not in node["inputs"]:
                 node["inputs"]["clean_whitespace"] = "true"
-            print("  [FLUX2-Klein] Ensured Text Concatenate 201 has delimiter and clean_whitespace")
+            logger.debug("FLUX2-KLEIN ensured Text Concatenate 201 has delimiter and clean_whitespace")
 
     def _ensure_flux2klein_placeholder(self) -> str:
         """Create (or reuse) a tiny safe placeholder image in ComfyUI/input/."""
@@ -525,11 +516,11 @@ class WorkflowService:
                 # Create a small neutral gray image (safe for any pipeline)
                 img = Image.new("RGB", (512, 512), color=(80, 80, 85))
                 img.save(full_path, "PNG")
-                print(f"  [FLUX2-Klein] Created safe placeholder image: {full_path}")
+                logger.info("FLUX2-KLEIN created placeholder image: %s", full_path)
 
             return filename
         except Exception as e:
-            print(f"  [FLUX2-Klein] Could not create placeholder image: {e}")
+            logger.warning("FLUX2-KLEIN could not create placeholder image: %s", e)
             # Fallback to something that might exist or will at least not crash hard
             return "example.png"
 

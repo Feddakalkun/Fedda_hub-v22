@@ -1,6 +1,7 @@
 // ComfyUI API Service
 import { COMFY_API, BACKEND_API } from '../config/api';
 import type { ComfyHistoryItem } from '../types/comfy';
+import type { ComfyCallbacks, ComfyExecutionOutput, ComfyExecutionError, ComfyStatusData, LoraListResponse } from '../types/api';
 import { addUiLog } from './uiLogger';
 
 class ComfyUIService {
@@ -8,14 +9,7 @@ class ComfyUIService {
     private ws: WebSocket | null = null;
     private reconnectAttempts: number = 0;
 
-    private _callbacks: {
-        onExecuting?: (nodeId: string | null) => void;
-        onProgress?: (nodeId: string, value: number, max: number) => void;
-        onCompleted?: (promptId: string, output: any) => void;
-        onExecutionError?: (data: any) => void;
-        onPreview?: (blobUrl: string) => void;
-        onStatus?: (data: any) => void;
-    } | null = null;
+    private _callbacks: ComfyCallbacks | null = null;
 
     constructor() {
         this.clientId = `fedda_web_${Math.random().toString(36).substring(2, 10)}`;
@@ -31,7 +25,7 @@ class ComfyUIService {
         return `${protocol}//${host}/comfy/ws`;
     }
 
-    public connectWebSocket(callbacks: any) {
+    public connectWebSocket(callbacks: ComfyCallbacks) {
         this._callbacks = callbacks;
         this.reconnectAttempts = 0;
         this._connect();
@@ -66,24 +60,24 @@ class ComfyUIService {
             }
 
             try {
-                const data = JSON.parse(event.data);
-                switch (data.type) {
+                const msg = JSON.parse(event.data) as { type: string; data: Record<string, unknown> };
+                switch (msg.type) {
                     case 'status':
-                        this._callbacks?.onStatus?.(data.data);
+                        this._callbacks?.onStatus?.(msg.data as unknown as ComfyStatusData);
                         break;
                     case 'executing':
-                        this._callbacks?.onExecuting?.(data.data.node);
+                        this._callbacks?.onExecuting?.(msg.data.node as string | null);
                         break;
                     case 'progress':
-                        this._callbacks?.onProgress?.(data.data.node, data.data.value, data.data.max);
+                        this._callbacks?.onProgress?.(msg.data.node as string, msg.data.value as number, msg.data.max as number);
                         break;
                     case 'executed':
-                        if (data.data.prompt_id) {
-                            this._callbacks?.onCompleted?.(data.data.prompt_id, data.data.output);
+                        if (msg.data.prompt_id) {
+                            this._callbacks?.onCompleted?.(msg.data.prompt_id as string, msg.data.output as ComfyExecutionOutput);
                         }
                         break;
                     case 'execution_error':
-                        this._callbacks?.onExecutionError?.(data.data);
+                        this._callbacks?.onExecutionError?.(msg.data as unknown as ComfyExecutionError);
                         break;
                 }
             } catch (e) {

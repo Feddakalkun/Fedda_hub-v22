@@ -42,6 +42,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from agent_runtime import AgentRuntime
+from logging_setup import setup_logging
+
+setup_logging()
+import logging
+logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────
 # App & CORS
