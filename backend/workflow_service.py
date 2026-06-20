@@ -362,6 +362,7 @@ class WorkflowService:
         _output_types = {
             "SaveImage", "VHS_VideoCombine", "SaveAnimatedWEBP",
             "comfy_image_saver", "ETN_SendImageWebSocket",
+            "HuggingFaceDownloader",
         }
         _queue = [nid for nid, node in workflow.items()
                   if isinstance(node, dict) and node.get("class_type") in _output_types]

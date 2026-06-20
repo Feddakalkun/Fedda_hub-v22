@@ -1,4 +1,21 @@
 {
+  "226": {
+    "inputs": {
+      "download_links": "https://huggingface.co/Comfy-Org/Ideogram-4/resolve/main/diffusion_models/ideogram4_fp8_scaled.safetensors diffusion_models\nhttps://huggingface.co/Comfy-Org/Ideogram-4/resolve/main/diffusion_models/ideogram4_unconditional_fp8_scaled.safetensors diffusion_models\nhttps://huggingface.co/Comfy-Org/Ideogram-4/resolve/main/text_encoders/qwen3vl_8b_fp8_scaled.safetensors text_encoders\nhttps://huggingface.co/Comfy-Org/Ideogram-4/resolve/main/vae/flux2-vae.safetensors vae",
+      "auto_download": true,
+      "max_concurrent_downloads": 3,
+      "max_download_speed_mbps": 0,
+      "enable_resume": true,
+      "validate_files": false,
+      "enable_notifications": true,
+      "auto_organize": false,
+      "hf_token": ""
+    },
+    "class_type": "HuggingFaceDownloader",
+    "_meta": {
+      "title": "HuggingFace Downloader"
+    }
+  },
   "2": {
     "inputs": {
       "width": 1088,
