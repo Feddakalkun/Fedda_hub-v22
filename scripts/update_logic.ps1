@@ -260,9 +260,13 @@ if ($NeedNodeUpdate -or $HasMissing) {
                 Set-Location $RootPath
             }
 
-            # skip_req_update: true = skip pip on updates (deps already present, re-checking is very slow)
+            # Hardcoded list of nodes whose pip re-check on update is extremely slow
+            # (torch/transformers already installed via ComfyUI — re-resolving costs minutes for nothing)
+            $HeavyNodes = @('ComfyUI_LayerStyle', 'ComfyUI_LayerStyle_Advance', 'ComfyUI-Impact-Pack', 'ComfyUI-Impact-Subpack', 'comfy_mtb')
+            $skipDeps = ($Node.skip_req_update -eq $true) -or ($HeavyNodes -contains $Node.folder)
+
             $ReqFile = Join-Path $NodeDir_Install "requirements.txt"
-            if ((Test-Path $ReqFile) -and ($Node.skip_req_update -ne $true)) {
+            if ((Test-Path $ReqFile) -and (-not $skipDeps)) {
                 Write-Host "  [$($Node.name)] Syncing dependencies..." -ForegroundColor Gray
                 $SkipPkgs = @('^\s*insightface','^\s*byaldi','^\s*nano-graphrag','^\s*kaleido','^\s*qwen-vl-utils','^\s*fastparquet')
                 $ReqContent = Get-Content $ReqFile
@@ -274,12 +278,13 @@ if ($NeedNodeUpdate -or $HasMissing) {
                 & $PyExe -m pip install -q -r "$TmpReq" --no-warn-script-location 2>&1
                 $ErrorActionPreference = "Stop"
                 Remove-Item $TmpReq -Force -ErrorAction SilentlyContinue
-            } elseif ($Node.skip_req_update -eq $true) {
-                Write-Host "  [$($Node.name)] Deps skipped on update (skip_req_update)" -ForegroundColor DarkGray
+            } elseif ($skipDeps) {
+                Write-Host "  [$($Node.name)] Deps skipped (heavy node - already satisfied)" -ForegroundColor DarkGray
             }
 
+            # Also skip repair_dependency.bat for heavy nodes — it reruns pip internally
             $RepairBat = Join-Path $NodeDir_Install "repair_dependency.bat"
-            if (Test-Path $RepairBat) {
+            if ((Test-Path $RepairBat) -and (-not $skipDeps)) {
                 Write-Host "  [$($Node.name)] Running repair_dependency.bat..." -ForegroundColor Gray
                 try {
                     Push-Location $NodeDir_Install
