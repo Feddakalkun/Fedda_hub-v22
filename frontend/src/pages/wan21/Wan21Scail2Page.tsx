@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Download, ExternalLink, Film, Loader2, Play, Upload, Video } from 'lucide-react';
 import { BACKEND_API } from '../../config/api';
@@ -17,6 +17,9 @@ const panel = 'rounded-xl border border-white/10 bg-[#09090b] p-4 shadow-[0_0_0_
 function isScail2Url(url: string) {
   return /(scail2|scail-2|SCAIL2|video%2fscail|video\/scail)/i.test(url);
 }
+
+const QUALITY_SCALES: Record<number, number> = { [-4]: 0.25, [-3]: 1/3, [-2]: 0.5, [-1]: 0.75, [0]: 1.0, [1]: 1.25, [2]: 1.5, [3]: 1.75, [4]: 2.0 };
+const QUALITY_STEPS = [-4, -3, -2, -1, 0, 1, 2, 3, 4] as const;
 
 function classNames(...items: Array<string | false | null | undefined>) {
   return items.filter(Boolean).join(' ');
@@ -219,10 +222,21 @@ export function Wan21Scail2Page() {
   const [prompt, setPrompt] = usePersistentState('scail2_prompt', 'a person dancing, cinematic lighting, natural movement');
   const [negative, setNegative] = usePersistentState('scail2_negative', '');
   const [showNegative, setShowNegative] = useState(false);
-  const [frameLength, setFrameLength] = usePersistentState('scail2_frames', 50);
-  const [width, setWidth] = usePersistentState('scail2_width', 720);
-  const [height, setHeight] = usePersistentState('scail2_height', 1200);
+  const [durationSec, setDurationSec] = usePersistentState('scail2_duration_sec', 2.0);
+  const [qualityStep, setQualityStep] = usePersistentState('scail2_quality', 0);
+  const [uploadedImageDimensions, setUploadedImageDimensions] = useState<{ w: number; h: number } | null>(null);
   const [seed, setSeed] = usePersistentState('scail2_seed', -1);
+
+  const computedDimensions = useMemo(() => {
+    const base = uploadedImageDimensions ?? { w: 720, h: 1200 };
+    const scale = QUALITY_SCALES[qualityStep] ?? 1.0;
+    return {
+      w: Math.max(256, Math.round((base.w * scale) / 16) * 16),
+      h: Math.max(256, Math.round((base.h * scale) / 16) * 16),
+    };
+  }, [uploadedImageDimensions, qualityStep]);
+
+  const frameLength = Math.max(8, Math.round(durationSec * 24));
 
   const [currentVideo, setCurrentVideo] = useState<string | null>(null);
   const [history, setHistory] = usePersistentState<string[]>('scail2_history', []);
@@ -328,6 +342,12 @@ export function Wan21Scail2Page() {
   };
 
   const handleImageUpload = async (file: File) => {
+    const objUrl = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => { setUploadedImageDimensions({ w: img.naturalWidth, h: img.naturalHeight }); URL.revokeObjectURL(objUrl); };
+    img.onerror = () => URL.revokeObjectURL(objUrl);
+    img.src = objUrl;
+
     setUploadingImage(true);
     try {
       const filename = await uploadToComfy(file);
@@ -396,8 +416,8 @@ export function Wan21Scail2Page() {
             prompt: prompt.trim(),
             negative: negative.trim(),
             frame_length: frameLength,
-            width,
-            height,
+            width: computedDimensions.w,
+            height: computedDimensions.h,
             seed: seed === -1 ? Math.floor(Math.random() * 10_000_000_000) : seed,
             client_id: comfyService.clientId,
           },
@@ -530,37 +550,18 @@ export function Wan21Scail2Page() {
                 )}
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-                <Field label="Frames">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Duration (seconds)">
                   <input
                     type="number"
-                    min={8}
-                    max={200}
-                    step={1}
-                    value={frameLength}
-                    onChange={(e) => setFrameLength(Number(e.target.value))}
+                    min={0.5}
+                    max={20}
+                    step={0.1}
+                    value={durationSec}
+                    onChange={(e) => setDurationSec(Math.max(0.5, Number(e.target.value)))}
                     className={inputBase}
                   />
-                </Field>
-                <Field label="Width">
-                  <input
-                    type="number"
-                    min={256}
-                    step={16}
-                    value={width}
-                    onChange={(e) => setWidth(Number(e.target.value))}
-                    className={inputBase}
-                  />
-                </Field>
-                <Field label="Height">
-                  <input
-                    type="number"
-                    min={256}
-                    step={16}
-                    value={height}
-                    onChange={(e) => setHeight(Number(e.target.value))}
-                    className={inputBase}
-                  />
+                  <p className="mt-1 text-[11px] text-zinc-600">= {frameLength} frames @ 24 fps</p>
                 </Field>
                 <Field label="Seed (−1 = random)">
                   <input
@@ -572,12 +573,36 @@ export function Wan21Scail2Page() {
                 </Field>
               </div>
 
+              <Field label="Quality / Resolution">
+                <div className="flex gap-1 flex-wrap">
+                  {QUALITY_STEPS.map((step) => (
+                    <button
+                      key={step}
+                      type="button"
+                      onClick={() => setQualityStep(step)}
+                      className={classNames(
+                        'px-2.5 py-1.5 rounded-lg border text-xs font-mono font-semibold transition',
+                        qualityStep === step
+                          ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-300'
+                          : 'border-white/10 bg-white/[0.03] text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.06]',
+                      )}
+                    >
+                      {step === 0 ? 'Auto' : step > 0 ? `+${step}` : step}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] text-zinc-600">
+                  {computedDimensions.w} × {computedDimensions.h} px
+                  {qualityStep === 0 && !uploadedImageDimensions ? ' · matches upload image size' : ''}
+                </p>
+              </Field>
+
               <div className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-[11px] text-zinc-500">
                 <span className="font-semibold text-zinc-400">Model:</span> SCAIL-2-Q4_K_M.gguf
                 &nbsp;·&nbsp;
-                <span className="font-semibold text-zinc-400">Output:</span> VIDEO/SCAIL2/
+                <span className="font-semibold text-zinc-400">Size:</span> {computedDimensions.w}×{computedDimensions.h}
                 &nbsp;·&nbsp;
-                <span className="font-semibold text-zinc-400">Frames:</span> {frameLength} @ 24 fps
+                <span className="font-semibold text-zinc-400">Duration:</span> {durationSec.toFixed(1)}s ({frameLength} fr @ 24 fps)
               </div>
 
               <NeutralButton
