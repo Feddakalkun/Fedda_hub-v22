@@ -198,10 +198,12 @@
         "wan22-vid2vid",
         "wan22-img2vid",
         "wan22-img2vid-6frames",
-        "wan21-steady-dancer"
+        "wan21-steady-dancer",
+        "wan21-scail2"
       ],
       "workflows": [
         "wan21-steady-dancer",
+        "wan21-scail2",
         "wan22-vid2vid",
         "wan22-img2vid",
         "wan22-img2vid-6frames"
@@ -263,6 +265,24 @@
         "FLUX2 Klein model family"
       ],
       "notes": "FLUX2 Klein txt2img workflow with stricter LoRA safety filtering."
+    },
+    {
+      "id": "ideogram",
+      "label": "Ideogram",
+      "pack": "booster",
+      "area": "image",
+      "enabled": true,
+      "tabs": ["ideogram", "ideogram-txt2img"],
+      "workflows": [
+        "ideogram-txt2img"
+      ],
+      "custom_nodes": [
+        "rgthree-comfy"
+      ],
+      "models": [
+        "Ideogram model"
+      ],
+      "notes": "Ideogram AI image generation."
     }
   ]
 }
