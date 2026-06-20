@@ -14,7 +14,8 @@ export type SourceModuleId =
   | 'wan-video'
   | 'ltx-video'
   | 'flux-klein'
-  | 'flux-klein-uncensored';
+  | 'flux-klein-uncensored'
+  | 'ideogram';
 
 export interface FeddaModule {
   id: string;
@@ -47,7 +48,7 @@ export const FEDDA_MODULES: FeddaModule[] = [
   {
     id: 'image-studio',
     sourceModuleId: 'z-image-core',
-    requiresAnyOf: ['z-image-core', 'z-image-advanced', 'sdxl-pack', 'qwen-image', 'chroma-image', 'firered-image', 'flux-klein', 'flux-klein-uncensored'],
+    requiresAnyOf: ['z-image-core', 'z-image-advanced', 'sdxl-pack', 'qwen-image', 'chroma-image', 'firered-image', 'flux-klein', 'flux-klein-uncensored', 'ideogram'],
     label: 'Image Studio',
     description: 'Text, reference and LoRA-driven image workflows synced with ComfyUI.',
     area: 'home',
@@ -242,6 +243,20 @@ export const FEDDA_MODULES: FeddaModule[] = [
     defaultTab: 'flux-txt2img',
     Icon: Sparkles,
     card: veniceCard(31),
+  },
+  {
+    id: 'ideogram',
+    sourceModuleId: 'ideogram',
+    label: 'IDEOGRAM',
+    description: 'Ideogram AI image generation with advanced text and style control.',
+    area: 'image',
+    pack: 'booster',
+
+    tabs: ['ideogram', 'ideogram-txt2img'],
+    workflows: ['ideogram-txt2img'],
+    defaultTab: 'ideogram-txt2img',
+    Icon: Sparkles,
+    card: veniceCard(32),
   },
   {
     id: 'firered-image-edit',

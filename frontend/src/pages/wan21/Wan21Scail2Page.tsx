@@ -212,6 +212,8 @@ export function Wan21Scail2Page() {
   const [motionVideoFile, setMotionVideoFile] = usePersistentState<string | null>('scail2_motion_video', null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [sourceUrl, setSourceUrl] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [prompt, setPrompt] = usePersistentState('scail2_prompt', 'a person dancing, cinematic lighting, natural movement');
   const [negative, setNegative] = usePersistentState('scail2_negative', '');
@@ -337,6 +339,26 @@ export function Wan21Scail2Page() {
     }
   };
 
+  const downloadMotion = async () => {
+    if (!sourceUrl.trim()) return;
+    setIsDownloading(true);
+    try {
+      const res = await fetch(`${BACKEND_API.BASE_URL}/api/media/download-video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: sourceUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.detail || 'Download failed');
+      setMotionVideoFile(data.filename);
+      toast(data.title ? `Downloaded: ${data.title}` : 'Video downloaded', 'success');
+    } catch (err: any) {
+      toast(err.message || 'Download failed', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleVideoUpload = async (file: File) => {
     setUploadingVideo(true);
     try {
@@ -439,24 +461,38 @@ export function Wan21Scail2Page() {
               <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
                 Motion Video
               </p>
-              <UploadDrop
-                accept="video/*"
-                label="Upload pose/dance video"
-                filename={motionVideoFile}
-                busy={uploadingVideo}
-                onFile={handleVideoUpload}
-                preview={
-                  motionPreviewUrl ? (
-                    <video
-                      src={motionPreviewUrl}
-                      className="max-h-40 w-full rounded-lg object-contain"
-                      muted
-                      playsInline
-                      controls
-                    />
-                  ) : undefined
-                }
-              />
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    value={sourceUrl}
+                    onChange={(e) => setSourceUrl(e.target.value)}
+                    placeholder="TikTok, Instagram Reel, YouTube Shorts or direct URL"
+                    className={inputBase}
+                  />
+                  <NeutralButton onClick={downloadMotion} disabled={!sourceUrl.trim() || isDownloading}>
+                    {isDownloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                    Download
+                  </NeutralButton>
+                </div>
+                <UploadDrop
+                  accept="video/*"
+                  label="Upload pose/dance video"
+                  filename={motionVideoFile}
+                  busy={uploadingVideo}
+                  onFile={handleVideoUpload}
+                  preview={
+                    motionPreviewUrl ? (
+                      <video
+                        src={motionPreviewUrl}
+                        className="max-h-40 w-full rounded-lg object-contain"
+                        muted
+                        playsInline
+                        controls
+                      />
+                    ) : undefined
+                  }
+                />
+              </div>
             </section>
           </div>
 
