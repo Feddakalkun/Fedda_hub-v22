@@ -2008,6 +2008,85 @@ async def get_ollama_vision_models():
         return {"success": False, "models": []}
 
 
+class IdeogramLayoutRequest(BaseModel):
+    prompt: str
+
+
+@app.post("/api/ideogram/generate-layout")
+async def ideogram_generate_layout(req: IdeogramLayoutRequest):
+    """Use local Ollama to auto-generate an Ideogram 4 element layout from a text description."""
+    prompt = req.prompt.strip()
+    if not prompt:
+        raise HTTPException(status_code=400, detail="prompt is required")
+
+    model = _get_ollama_text_model()
+    if not model:
+        raise HTTPException(status_code=503, detail="No local Ollama text model available.")
+
+    system = (
+        "You are an Ideogram 4 layout generator. Output ONLY a single JSON object, no markdown, no explanation.\n"
+        "Format:\n"
+        '{"description":"one-sentence overview","background":"background description",'
+        '"elements":[{"type":"text","text":"TEXT","desc":"font style","x":0.0,"y":0.0,"w":0.9,"h":0.2},'
+        '{"type":"obj","text":"","desc":"object description","x":0.0,"y":0.2,"w":1.0,"h":0.6}]}\n\n'
+        "Rules:\n"
+        "- x,y,w,h are 0.0-1.0 fractions (left, top, width, height of image)\n"
+        "- type: 'text' for text elements (fill text field), 'obj' for visual objects (leave text empty)\n"
+        "- 2-6 elements max, place title near top, main visual in center, footer near bottom\n"
+        "- backgrounds: 'dark studio', 'black bg', 'white bg', 'gradient', or descriptive phrase"
+    )
+
+    payload = {
+        "model": model,
+        "prompt": f"{system}\n\nUser wants: {prompt}\n\nJSON:",
+        "stream": False,
+        "format": "json",
+        "options": {"temperature": 0.35, "top_p": 0.9, "num_predict": 900},
+    }
+
+    try:
+        resp = requests.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=60)
+        if not resp.ok:
+            raise HTTPException(status_code=502, detail=f"Ollama error: {resp.text}")
+        raw = str(resp.json().get("response", "")).strip()
+        if not raw:
+            raise HTTPException(status_code=502, detail="Ollama returned empty response")
+
+        try:
+            layout = json.loads(raw)
+        except json.JSONDecodeError:
+            import re as _re
+            m = _re.search(r"\{.*\}", raw, _re.DOTALL)
+            if not m:
+                raise HTTPException(status_code=502, detail="Could not parse layout JSON")
+            layout = json.loads(m.group(0))
+
+        elements = []
+        for el in layout.get("elements", []):
+            if not isinstance(el, dict):
+                continue
+            elements.append({
+                "type": "text" if str(el.get("type", "")).lower() == "text" else "obj",
+                "text": str(el.get("text", "")),
+                "desc": str(el.get("desc", "")),
+                "x": float(max(0.0, min(1.0, el.get("x", 0.0)))),
+                "y": float(max(0.0, min(1.0, el.get("y", 0.0)))),
+                "w": float(max(0.02, min(1.0, el.get("w", 0.5)))),
+                "h": float(max(0.02, min(1.0, el.get("h", 0.2)))),
+            })
+
+        return {
+            "success": True,
+            "description": str(layout.get("description", prompt)),
+            "background": str(layout.get("background", "dark studio background")),
+            "elements": elements,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Layout generation failed: {exc}")
+
+
 # ─────────────────────────────────────────────
 # Workflow & Generation
 # ─────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Download, ExternalLink, Image as ImageIcon, Loader2, Play, Plus, Trash2 } from 'lucide-react';
+import { Download, ExternalLink, Image as ImageIcon, Loader2, Play, Plus, Trash2, Wand2 } from 'lucide-react';
 import { BACKEND_API } from '../../config/api';
 import { useToast } from '../../components/ui/Toast';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
@@ -230,6 +230,7 @@ export function IdeogramTxt2ImgPage() {
   const [quality, setQuality] = usePersistentState<QualityKey>('ideogram_quality', 'Default');
   const [seed, setSeed] = usePersistentState('ideogram_seed', -1);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isGeneratingLayout, setIsGeneratingLayout] = useState(false);
 
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [history, setHistory] = usePersistentState<string[]>('ideogram_history', []);
@@ -372,6 +373,42 @@ export function IdeogramTxt2ImgPage() {
     setElements((prev) => prev.filter((el) => el.id !== id));
   };
 
+  const generateLayout = async () => {
+    const desc = description.trim();
+    if (!desc) { toast('Enter a description first', 'error'); return; }
+    setIsGeneratingLayout(true);
+    try {
+      const res = await fetch(`${BACKEND_API.BASE_URL}/api/ideogram/generate-layout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: desc }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.detail || 'Layout generation failed');
+      if (data.description) setDescription(data.description);
+      if (data.background) setBackground(data.background);
+      if (Array.isArray(data.elements)) {
+        setElements(
+          data.elements.map((el: { type: string; text: string; desc: string; x: number; y: number; w: number; h: number }) => ({
+            id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            type: (el.type === 'text' ? 'text' : 'obj') as 'text' | 'obj',
+            text: el.text ?? '',
+            desc: el.desc ?? '',
+            x: el.x ?? 0.1,
+            y: el.y ?? 0.1,
+            w: el.w ?? 0.4,
+            h: el.h ?? 0.2,
+          })),
+        );
+      }
+      toast(`Layout generated — ${data.elements?.length ?? 0} elements`, 'success');
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : 'Layout generation failed', 'error');
+    } finally {
+      setIsGeneratingLayout(false);
+    }
+  };
+
   return (
     <WorkflowShell
       title="Ideogram 4"
@@ -495,11 +532,23 @@ export function IdeogramTxt2ImgPage() {
 
             {/* Elements builder */}
             <section className={panel}>
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
                   Placed Elements{elements.length > 0 ? ` (${elements.length})` : ''}
                 </p>
                 <div className="flex gap-2">
+                  <NeutralButton
+                    onClick={generateLayout}
+                    disabled={isGeneratingLayout || !description.trim()}
+                    className="border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20"
+                  >
+                    {isGeneratingLayout ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Wand2 className="h-3 w-3" />
+                    )}
+                    {isGeneratingLayout ? 'Thinking...' : 'AI Layout'}
+                  </NeutralButton>
                   <NeutralButton
                     onClick={() => setElements((prev) => [...prev, newElement('text')])}
                   >
