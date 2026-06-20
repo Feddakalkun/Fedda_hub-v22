@@ -86,6 +86,14 @@ function Get-FeddaNodeConfig {
                     "Text Multiline" = "was-node-suite-comfyui"
                     "UnetLoaderGGUF" = "ComfyUI-GGUF"
                     "DualCLIPLoaderGGUF" = "ComfyUI-GGUF"
+                    "Ideogram4PromptBuilderKJ" = "ComfyUI-KJNodes"
+                    "Ideogram4Scheduler" = "ComfyUI-KJNodes"
+                    "PrimitiveInt" = "ComfyLiterals"
+                    "JsonExtractString" = "ComfyLiterals"
+                    "StringReplace" = "ComfyLiterals"
+                    "ComfyMathExpression" = "ComfyMath"
+                    "ComfyNumberConvert" = "ComfyMath"
+                    "ImpactSwitch" = "ComfyUI-Impact-Pack"
                     # Add more class_type -> node package mappings here as new workflows are introduced
                 }
 

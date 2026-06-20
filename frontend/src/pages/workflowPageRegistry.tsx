@@ -18,6 +18,7 @@ import { Wan21SteadyDancerPage } from './wan21/Wan21SteadyDancerPage';
 import { Wan21Scail2Page } from './wan21/Wan21Scail2Page';
 import { LtxImg2VidPage } from './ltx/LtxImg2VidPage';
 import { LtxFlfPage } from './ltx/LtxFlfPage';
+import { IdeogramTxt2ImgPage } from './ideogram/IdeogramTxt2ImgPage';
 
 export const IMAGE_WORKFLOW_PAGES: Record<string, ComponentType> = {
   'z-image': ZImageTxt2Img,
@@ -38,6 +39,8 @@ export const IMAGE_WORKFLOW_PAGES: Record<string, ComponentType> = {
   'sdxl-outpaint': SDXLOutpaint,
   'sdxl-controlnet-depth': SDXLControlNetDepth,
   'sdxl-controlnet-openpose': SDXLControlNetOpenPose,
+  'ideogram': IdeogramTxt2ImgPage,
+  'ideogram-txt2img': IdeogramTxt2ImgPage,
 };
 
 export const VIDEO_WORKFLOW_PAGES: Record<string, ComponentType> = {

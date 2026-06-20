@@ -355,6 +355,33 @@ class WorkflowService:
         if workflow_id == "qwen-multi-angles":
             self._trim_qwen_multi_angle_outputs(workflow, user_params)
 
+        # Strip nodes unreachable from output nodes. Literal-value injection (e.g. the
+        # Ideogram scheduler bypass) can leave entire sub-graphs orphaned; some of those
+        # orphaned nodes may have no class_type or broken references that cause ComfyUI
+        # prompt validation to reject the whole payload.
+        _output_types = {
+            "SaveImage", "VHS_VideoCombine", "SaveAnimatedWEBP",
+            "comfy_image_saver", "ETN_SendImageWebSocket",
+        }
+        _queue = [nid for nid, node in workflow.items()
+                  if isinstance(node, dict) and node.get("class_type") in _output_types]
+        _reachable: set[str] = set(_queue)
+        while _queue:
+            _nid = _queue.pop()
+            _node = workflow.get(_nid)
+            if not isinstance(_node, dict):
+                continue
+            for _val in (_node.get("inputs") or {}).values():
+                if isinstance(_val, list) and len(_val) == 2:
+                    _dep = str(_val[0])
+                    if _dep not in _reachable and _dep in workflow:
+                        _reachable.add(_dep)
+                        _queue.append(_dep)
+        _unreachable = [nid for nid in workflow if nid not in _reachable]
+        for nid in _unreachable:
+            del workflow[nid]
+            logger.debug("Pruned unreachable node %s", nid)
+
         # 3. Auto-inject Hugging Face token into downloader nodes when configured
         hf_token = str(self.load_runtime_settings().get("hf_token") or "").strip()
         if hf_token:

@@ -105,40 +105,65 @@ class ModelDownloader:
             }
 
     def download_direct(self, url: str, dest_path: Path, filename: str, headers: Optional[dict] = None):
-        """Standard HTTP download with progress tracking."""
+        """Standard HTTP download with progress tracking.
+
+        Downloads to a .fedda_tmp sidecar first; only renames to dest_path on
+        full success.  This prevents a partial file from ever being mistaken for
+        a valid model on subsequent calls.
+        """
+        tmp_path = dest_path.with_suffix(dest_path.suffix + ".fedda_tmp")
         try:
             self._update_progress(filename, "downloading", 0)
             dest_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             response = requests.get(url, stream=True, timeout=30, headers=headers or {})
             response.raise_for_status()
 
-            total_size = int(response.headers.get('content-length', 0))
+            total_size = int(response.headers.get("content-length", 0))
             downloaded_size = 0
 
-            with open(dest_path, 'wb') as f:
+            with open(tmp_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=65536):
                     if chunk:
                         f.write(chunk)
                         downloaded_size += len(chunk)
                         if total_size > 0:
                             prog = int((downloaded_size / total_size) * 100)
-                            if prog % 5 == 0: # Reduce lock contention
+                            if prog % 5 == 0:
                                 self._update_progress(filename, "downloading", prog)
+
+            # Validate we got what we expected before promoting
+            if total_size > 0 and downloaded_size < total_size:
+                raise IOError(
+                    f"Download truncated: got {downloaded_size} of {total_size} bytes"
+                )
+
+            # Atomic-ish rename: removes stale dest if it somehow exists
+            if dest_path.exists():
+                dest_path.unlink()
+            tmp_path.rename(dest_path)
 
             self._update_progress(filename, "completed", 100)
             return True
         except Exception as e:
             self._update_progress(filename, "error", 0, str(e))
-            if dest_path.exists():
-                dest_path.unlink()
+            for p in (tmp_path, dest_path):
+                try:
+                    if p.exists():
+                        p.unlink()
+                except OSError:
+                    pass
             return False
         finally:
             with self.lock:
                 self._active_downloads.pop(filename, None)
 
     def _is_valid_file(self, path: Path, min_bytes: int = 10240) -> bool:
+        """Return True only for a fully-committed (non-.fedda_tmp) file of sufficient size."""
         try:
+            # Never count the temp sidecar as valid
+            if path.suffix == ".fedda_tmp":
+                return False
             return path.exists() and path.stat().st_size >= min_bytes
         except Exception:
             return False
@@ -157,6 +182,14 @@ class ModelDownloader:
             existing = self._active_downloads.get(filename)
             if existing and existing.is_alive():
                 return "downloading"
+
+            # Clean up any stale .fedda_tmp left by a previous interrupted run
+            tmp_path = dest_path.with_suffix(dest_path.suffix + ".fedda_tmp")
+            try:
+                if tmp_path.exists():
+                    tmp_path.unlink()
+            except OSError:
+                pass
 
             t = threading.Thread(
                 target=self.download_direct,

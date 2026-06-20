@@ -306,5 +306,11 @@
     "url": "https://github.com/city96/ComfyUI-GGUF.git",
     "folder": "ComfyUI-GGUF",
     "note": "UnetLoaderGGUF — loads quantized GGUF model files (required for SCAIL-2 and other GGUF models)"
+  },
+  {
+    "name": "ComfyLiterals",
+    "url": "https://github.com/M1kep/ComfyLiterals.git",
+    "folder": "ComfyLiterals",
+    "note": "PrimitiveInt, JsonExtractString, StringReplace — primitive pass-through and JSON utility nodes (required for Ideogram workflow)"
   }
 ]

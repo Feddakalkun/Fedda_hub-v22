@@ -278,12 +278,19 @@
         "ideogram-txt2img"
       ],
       "custom_nodes": [
-        "rgthree-comfy"
+        "ComfyUI-KJNodes",
+        "ComfyLiterals",
+        "ComfyMath",
+        "ComfyUI-Impact-Pack",
+        "ComfyUI-Studio-nodes"
       ],
       "models": [
-        "Ideogram model"
+        "ideogram4_fp8_scaled.safetensors",
+        "ideogram4_unconditional_fp8_scaled.safetensors",
+        "qwen3vl_8b_fp8_scaled.safetensors",
+        "flux2-vae.safetensors"
       ],
-      "notes": "Ideogram AI image generation."
+      "notes": "Local Ideogram 4 text-to-image with precise text/object placement via KJNodes prompt builder."
     }
   ]
 }

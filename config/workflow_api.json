@@ -1942,6 +1942,97 @@
                                                             }
                                               }
                                },
+    "ideogram-txt2img": {
+        "name": "Ideogram 4 Txt2Img",
+        "filename": "ideogram/IDEOGRAM.json",
+        "description": "Local Ideogram 4 image generation with precise text/object element placement.",
+        "inputs": {
+            "description": {
+                "node_id": "2",
+                "input_key": "high_level_description",
+                "type": "string",
+                "label": "Description"
+            },
+            "background": {
+                "node_id": "2",
+                "input_key": "background",
+                "type": "string",
+                "label": "Background"
+            },
+            "style": {
+                "node_id": "2",
+                "input_key": "style",
+                "type": "string",
+                "label": "Style"
+            },
+            "aesthetics": {
+                "node_id": "2",
+                "input_key": "aesthetics",
+                "type": "string",
+                "label": "Aesthetics"
+            },
+            "lighting": {
+                "node_id": "2",
+                "input_key": "lighting",
+                "type": "string",
+                "label": "Lighting"
+            },
+            "medium": {
+                "node_id": "2",
+                "input_key": "medium",
+                "type": "string",
+                "label": "Medium"
+            },
+            "bg_brightness": {
+                "node_id": "2",
+                "input_key": "bg_brightness",
+                "type": "number",
+                "label": "BG Brightness"
+            },
+            "elements_data": {
+                "node_id": "2",
+                "input_key": "elements_data",
+                "type": "string",
+                "label": "Elements Data JSON"
+            },
+            "width": {
+                "node_id": "2",
+                "input_key": "width",
+                "type": "number",
+                "label": "Width"
+            },
+            "height": {
+                "node_id": "2",
+                "input_key": "height",
+                "type": "number",
+                "label": "Height"
+            },
+            "steps": {
+                "node_id": "209",
+                "input_key": "steps",
+                "type": "number",
+                "label": "Steps"
+            },
+            "mu": {
+                "node_id": "209",
+                "input_key": "mu",
+                "type": "number",
+                "label": "Mu"
+            },
+            "std": {
+                "node_id": "209",
+                "input_key": "std",
+                "type": "number",
+                "label": "Std"
+            },
+            "seed": {
+                "node_id": "208",
+                "input_key": "noise_seed",
+                "type": "number",
+                "label": "Seed"
+            }
+        }
+    },
     "wan21-scail2": {
         "name": "WAN 2.1 SCAIL-2",
         "filename": "wan21/WAN-21-SCAIL-2.json",
