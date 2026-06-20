@@ -258,10 +258,10 @@ if ($NeedNodeUpdate -or $HasMissing) {
                 Set-Location $RootPath
             }
 
+            # skip_req_update: true = skip pip on updates (deps already present, re-checking is very slow)
             $ReqFile = Join-Path $NodeDir_Install "requirements.txt"
-            if (Test-Path $ReqFile) {
-                Write-Host "  [$($Node.name)] Installing dependencies..." -ForegroundColor Gray
-                Write-Host "    (this can take a LONG time for heavy nodes like LayerStyle_Advance - mediapipe, onnxruntime, transformers etc.)" -ForegroundColor DarkGray
+            if ((Test-Path $ReqFile) -and ($Node.skip_req_update -ne $true)) {
+                Write-Host "  [$($Node.name)] Syncing dependencies..." -ForegroundColor Gray
                 $SkipPkgs = @('^\s*insightface','^\s*byaldi','^\s*nano-graphrag','^\s*kaleido','^\s*qwen-vl-utils','^\s*fastparquet')
                 $ReqContent = Get-Content $ReqFile
                 $Filtered = $ReqContent
@@ -269,9 +269,11 @@ if ($NeedNodeUpdate -or $HasMissing) {
                 $TmpReq = Join-Path $NodeDir_Install "_req_filtered.txt"
                 Set-Content -Path $TmpReq -Value $Filtered
                 $ErrorActionPreference = "Continue"
-                & $PyExe -m pip install -r "$TmpReq" --no-warn-script-location 2>&1
+                & $PyExe -m pip install -q -r "$TmpReq" --no-warn-script-location 2>&1
                 $ErrorActionPreference = "Stop"
                 Remove-Item $TmpReq -Force -ErrorAction SilentlyContinue
+            } elseif ($Node.skip_req_update -eq $true) {
+                Write-Host "  [$($Node.name)] Deps skipped on update (skip_req_update)" -ForegroundColor DarkGray
             }
 
             $RepairBat = Join-Path $NodeDir_Install "repair_dependency.bat"

@@ -87,7 +87,8 @@
     "name": "ComfyUI_LayerStyle",
     "url": "https://github.com/chflame163/ComfyUI_LayerStyle.git",
     "folder": "ComfyUI_LayerStyle",
-    "note": "LayerStyle basic nodes"
+    "note": "LayerStyle basic nodes",
+    "skip_req_update": true
   },
   {
     "name": "ComfyUI-KJNodes",
@@ -135,7 +136,8 @@
     "name": "ComfyUI_LayerStyle_Advance",
     "url": "https://github.com/chflame163/ComfyUI_LayerStyle_Advance.git",
     "folder": "ComfyUI_LayerStyle_Advance",
-    "note": "LayerStyle Advance features (provides LayerMask: PersonMaskUltra V2). See https://github.com/chflame163/ComfyUI_LayerStyle_Advance , https://docs.getsalt.ai/md/ComfyUI_LayerStyle/Nodes/LayerMask:%20PersonMaskUltra%20V2/ and https://comfy.icu/node/LayerMask-PersonMaskUltra-V2"
+    "note": "LayerStyle Advance features (provides LayerMask: PersonMaskUltra V2). See https://github.com/chflame163/ComfyUI_LayerStyle_Advance , https://docs.getsalt.ai/md/ComfyUI_LayerStyle/Nodes/LayerMask:%20PersonMaskUltra%20V2/ and https://comfy.icu/node/LayerMask-PersonMaskUltra-V2",
+    "skip_req_update": true
   },
   {
     "name": "comfy-image-saver",
