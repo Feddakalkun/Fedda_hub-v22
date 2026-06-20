@@ -9,11 +9,13 @@ $ScriptPath = $PSScriptRoot
 $RootPath = Split-Path -Parent $ScriptPath
 Set-Location $RootPath
 
-# Always log everything to the update log (for visibility even if called silently)
+# Start transcript only when run standalone (update_code.ps1 owns it when calling us)
 $LogDir = Join-Path $RootPath "logs"
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
 $LogFile = Join-Path $LogDir "update.log"
-try { Start-Transcript -Path $LogFile -Append -Force | Out-Null } catch {}
+if (-not $FeddaTranscriptOwner) {
+    try { Start-Transcript -Path $LogFile -Append -Force | Out-Null } catch {}
+}
 
 if (-not $SilentMode) {
     Write-Host "===================================================" -ForegroundColor Cyan
@@ -440,7 +442,9 @@ if (Test-Path $PreviewSetupScript) {
 # ============================================================================
 # DONE
 # ============================================================================
-try { Stop-Transcript | Out-Null } catch {}
+if (-not $FeddaTranscriptOwner) {
+    try { Stop-Transcript | Out-Null } catch {}
+}
 
 if (-not $SilentMode) {
     Write-Host "`n===================================================" -ForegroundColor Green

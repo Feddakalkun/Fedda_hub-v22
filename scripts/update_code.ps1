@@ -11,6 +11,15 @@ $ScriptPath = $PSScriptRoot
 $RootPath = Split-Path -Parent $ScriptPath
 Set-Location $RootPath
 
+# Start unified log — captures git pull + all node/dep steps in one file
+$LogDir = Join-Path $RootPath "logs"
+if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
+$LogFile = Join-Path $LogDir "update.log"
+$FeddaTranscriptOwner = $true  # tells update_logic.ps1 not to start its own transcript
+try { Start-Transcript -Path $LogFile -Append -Force | Out-Null } catch {}
+Write-Host "=== FEDDA Update started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') ===" -ForegroundColor DarkGray
+Write-Host "Log file: $LogFile" -ForegroundColor DarkGray
+
 if (-not $SilentMode) {
     Write-Host "`n===================================================" -ForegroundColor Cyan
     Write-Host "  FEDDA CODE UPDATE" -ForegroundColor Cyan
@@ -88,7 +97,12 @@ if (Test-Path $UpdateLogic) {
     if (-not $SilentMode) {
         Write-Host "`n  Running full maintenance (nodes, deps, frontend)..." -ForegroundColor Yellow
     }
-    & powershell -ExecutionPolicy Bypass -File "$UpdateLogic" $(if ($SilentMode) { "-SilentMode" })
+    # Dot-source so transcript captures all output in the same session
+    if ($SilentMode) {
+        . "$UpdateLogic" -SilentMode
+    } else {
+        . "$UpdateLogic"
+    }
 } else {
     if (-not $SilentMode) {
         Write-Host "`n  [WARN] update_logic.ps1 not found - skipping node/dep maintenance." -ForegroundColor Yellow
@@ -98,6 +112,9 @@ if (Test-Path $UpdateLogic) {
 # ============================================================================
 # DONE
 # ============================================================================
+Write-Host "=== FEDDA Update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') ===" -ForegroundColor DarkGray
+try { Stop-Transcript | Out-Null } catch {}
+
 if (-not $SilentMode) {
     Write-Host "`n===================================================" -ForegroundColor Green
     Write-Host "  UPDATE COMPLETE" -ForegroundColor Green
