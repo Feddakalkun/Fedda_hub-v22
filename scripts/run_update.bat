@@ -12,7 +12,7 @@ if exist "%ROOT_DIR%\.last_node_update" del "%ROOT_DIR%\.last_node_update" >nul 
 
 echo [%date% %time%] FEDDA Update Starting... (logging to %LOG_FILE%)
 
-powershell -ExecutionPolicy Bypass -File "%ROOT_DIR%\scripts\update_logic.ps1"
+powershell -ExecutionPolicy Bypass -File "%ROOT_DIR%\scripts\update_code.ps1"
 
 set "UPDATE_EXIT=%errorlevel%"
 
