@@ -51,6 +51,7 @@ export const SIDEBAR_SECTIONS: NavSection[] = [
           { id: 'wan22-vid2vid', label: 'WAN Vid2Vid' },
           { id: 'wan22-img2vid-6frames', label: 'WAN Story' },
           { id: 'wan21-steady-dancer', label: 'Steady Dancer' },
+          { id: 'wan21-scail2', label: 'SCAIL-2' },
           { id: 'ltx-img2vid', label: 'LTX Img2Vid' },
           { id: 'ltx-flf', label: 'LTX First / Last' },
         ],

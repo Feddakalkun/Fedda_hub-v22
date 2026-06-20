@@ -121,7 +121,7 @@ export function ZonosTTSPage() {
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="w-full min-h-[120px] rounded-xl bg-black/40 border border-white/10 p-4 text-sm"
+              className="w-full min-h-[120px] rounded-xl fedda-input p-4 text-sm"
               placeholder="Enter the text you want Zonos 2 to speak..."
             />
           </div>
@@ -134,7 +134,7 @@ export function ZonosTTSPage() {
                 value={voiceName}
                 onChange={(e) => setVoiceName(e.target.value)}
                 placeholder="Voice name or leave for default/clone"
-                className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm"
+                className="w-full rounded-xl fedda-input p-3 text-sm"
               />
             </div>
             <div className="flex items-end gap-2">
@@ -159,7 +159,7 @@ export function ZonosTTSPage() {
                     value={referenceAudio}
                     onChange={(e) => setReferenceAudio(e.target.value)}
                     placeholder="reference.wav (place in accessible folder)"
-                    className="flex-1 rounded-xl bg-black/40 border border-white/10 p-3 text-sm"
+                    className="flex-1 rounded-xl fedda-input p-3 text-sm"
                   />
                   <label className="cursor-pointer flex items-center gap-2 px-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-sm">
                     <Upload className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function ZonosTTSPage() {
                   value={referenceText}
                   onChange={(e) => setReferenceText(e.target.value)}
                   placeholder="What the reference audio says..."
-                  className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm"
+                  className="w-full rounded-xl fedda-input p-3 text-sm"
                 />
               </div>
             </div>
@@ -215,7 +215,7 @@ export function ZonosTTSPage() {
                 value={emotion}
                 onChange={(e) => setEmotion(e.target.value)}
                 placeholder="happy, sad, excited, calm..."
-                className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm"
+                className="w-full rounded-xl fedda-input p-3 text-sm"
               />
             </div>
           </div>

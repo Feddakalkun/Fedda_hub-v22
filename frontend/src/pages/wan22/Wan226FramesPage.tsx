@@ -288,7 +288,7 @@ ${combinedNarrative}`;
       const params: any = {
         seed: bSeed,
         nsfw: !!nsfw,
-        client_id: (comfyService as any).clientId || 'fedda_hub',
+        client_id: comfyService.clientId,
       };
 
       for (let i = 0; i < FRAME_COUNT; i++) {

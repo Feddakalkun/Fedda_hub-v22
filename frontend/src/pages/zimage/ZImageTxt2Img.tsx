@@ -471,7 +471,7 @@ export const Txt2ImgPage = ({
         seed: seed === -1 ? Math.floor(Math.random() * 10_000_000_000) : seed,
         steps,
         cfg,
-        client_id: (comfyService as any).clientId,
+        client_id: comfyService.clientId,
       };
 
       if (requireImageUpload && uploadedImageName) {

@@ -1941,5 +1941,60 @@
                                                                 "label":  "Denoise"
                                                             }
                                               }
-                               }
+                               },
+    "wan21-scail2": {
+        "name": "WAN 2.1 SCAIL-2",
+        "filename": "wan21/WAN-21-SCAIL-2.json",
+        "description": "Animate a reference person photo using a pose/dance video with the SCAIL-2 GGUF model.",
+        "inputs": {
+            "image": {
+                "node_id": "178",
+                "input_key": "image",
+                "type": "string",
+                "label": "Reference Image"
+            },
+            "reference_video": {
+                "node_id": "33",
+                "input_key": "video",
+                "type": "string",
+                "label": "Reference Motion Video"
+            },
+            "prompt": {
+                "node_id": "179",
+                "input_key": "text",
+                "type": "string",
+                "label": "Positive Prompt"
+            },
+            "negative": {
+                "node_id": "180",
+                "input_key": "text",
+                "type": "string",
+                "label": "Negative Prompt"
+            },
+            "frame_length": {
+                "node_id": "191",
+                "input_key": "value",
+                "type": "number",
+                "label": "Frame Length"
+            },
+            "width": {
+                "node_id": "197",
+                "input_key": "width",
+                "type": "number",
+                "label": "Width"
+            },
+            "height": {
+                "node_id": "197",
+                "input_key": "height",
+                "type": "number",
+                "label": "Height"
+            },
+            "seed": {
+                "node_id": "19",
+                "input_key": "noise_seed",
+                "type": "number",
+                "label": "Seed"
+            }
+        }
+    }
 }

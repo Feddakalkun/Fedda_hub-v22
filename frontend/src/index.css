@@ -1413,6 +1413,20 @@ body {
 }
 
 
+/* ──────────────────────────────────────────
+   Shared form controls for external-API pages (Venice, Grok, etc.)
+────────────────────────────────────────── */
+.fedda-input {
+  background: rgba(0, 0, 0, 0.40);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  outline: none;
+  transition: border-color 0.16s ease;
+}
+
+.fedda-input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
 /* v15 minimal distribution navigation */
 .v15-home-btn {
   min-height: 32px;

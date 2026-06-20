@@ -408,7 +408,7 @@ export function SimpleImageCockpit({
                 value={characterPrompt}
                 onChange={(event) => setCharacterPrompt(event.target.value)}
                 placeholder={characterPromptPlaceholder ?? 'Identity phrase'}
-                className="w-full rounded-xl border border-white/[0.07] bg-black/25 px-3 py-2 text-[12px] font-semibold text-white/70 outline-none transition focus:border-white/20"
+                className="w-full rounded-xl fedda-input px-3 py-2 text-[12px] font-semibold text-white/70 focus:border-white/20"
               />
             </div>
           )}

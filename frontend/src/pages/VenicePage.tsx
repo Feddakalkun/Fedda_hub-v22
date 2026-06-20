@@ -479,7 +479,7 @@ Current context: User is requesting images of Elara at the safari camp, now spec
                     value={imgPrompt}
                     onChange={e => setImgPrompt(e.target.value)}
                     placeholder="A cinematic portrait of a cyberpunk samurai in neon rain..."
-                    className="w-full min-h-[90px] resize-y rounded-xl bg-black/40 border border-white/10 p-4 text-sm placeholder:text-white/30 focus:border-violet-500/40 focus:outline-none transition"
+                    className="w-full min-h-[90px] resize-y rounded-xl fedda-input p-4 text-sm focus:border-violet-500/40"
                   />
                 </div>
 
@@ -493,7 +493,7 @@ Current context: User is requesting images of Elara at the safari camp, now spec
                     <select
                       value={imgModel}
                       onChange={e => setImgModel(e.target.value)}
-                      className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm focus:border-violet-500/40 focus:outline-none transition"
+                      className="w-full rounded-xl fedda-input p-3 text-sm focus:border-violet-500/40"
                     >
                       {VENICE_IMAGE_MODELS.map(m => (
                         <option key={m.id} value={m.id}>{m.label}</option>
@@ -510,7 +510,7 @@ Current context: User is requesting images of Elara at the safari camp, now spec
                       value={negativePrompt}
                       onChange={e => setNegativePrompt(e.target.value)}
                       placeholder="blurry, low quality, deformed"
-                      className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm placeholder:text-white/30 focus:border-violet-500/40 focus:outline-none transition"
+                      className="w-full rounded-xl fedda-input p-3 text-sm focus:border-violet-500/40"
                     />
                   </div>
                 </div>
@@ -524,24 +524,24 @@ Current context: User is requesting images of Elara at the safari camp, now spec
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="space-y-1">
                       <div className="text-[10px] text-white/50">Width</div>
-                      <input type="number" value={width} onChange={e=>setWidth(+e.target.value)} className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm focus:border-violet-500/40 focus:outline-none" />
+                      <input type="number" value={width} onChange={e=>setWidth(+e.target.value)} className="w-full rounded-xl fedda-input p-2.5 text-sm focus:border-violet-500/40" />
                     </div>
                     <div className="space-y-1">
                       <div className="text-[10px] text-white/50">Height</div>
-                      <input type="number" value={height} onChange={e=>setHeight(+e.target.value)} className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm focus:border-violet-500/40 focus:outline-none" />
+                      <input type="number" value={height} onChange={e=>setHeight(+e.target.value)} className="w-full rounded-xl fedda-input p-2.5 text-sm focus:border-violet-500/40" />
                     </div>
                     <div className="space-y-1">
                       <div className="text-[10px] text-white/50">Steps</div>
-                      <input type="number" value={steps} onChange={e=>setSteps(+e.target.value)} className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm focus:border-violet-500/40 focus:outline-none" />
+                      <input type="number" value={steps} onChange={e=>setSteps(+e.target.value)} className="w-full rounded-xl fedda-input p-2.5 text-sm focus:border-violet-500/40" />
                     </div>
                     <div className="space-y-1">
                       <div className="text-[10px] text-white/50">CFG Scale</div>
-                      <input type="number" step="0.5" value={cfgScale} onChange={e=>setCfgScale(+e.target.value)} className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm focus:border-violet-500/40 focus:outline-none" />
+                      <input type="number" step="0.5" value={cfgScale} onChange={e=>setCfgScale(+e.target.value)} className="w-full rounded-xl fedda-input p-2.5 text-sm focus:border-violet-500/40" />
                     </div>
                   </div>
                   <div className="mt-3">
                     <div className="text-[10px] text-white/50 mb-1">Seed (optional)</div>
-                    <input type="number" value={seed ?? ''} onChange={e=>setSeed(e.target.value ? +e.target.value : undefined)} placeholder="Leave blank for random" className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm placeholder:text-white/30 focus:border-violet-500/40 focus:outline-none font-mono" />
+                    <input type="number" value={seed ?? ''} onChange={e=>setSeed(e.target.value ? +e.target.value : undefined)} placeholder="Leave blank for random" className="w-full rounded-xl fedda-input p-2.5 text-sm font-mono focus:border-violet-500/40" />
                   </div>
                 </div>
 
@@ -642,7 +642,7 @@ Current context: User is requesting images of Elara at the safari camp, now spec
                     <select
                       value={chatModel}
                       onChange={(e) => setChatModel(e.target.value)}
-                      className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm focus:border-violet-500/40"
+                      className="rounded-lg fedda-input px-3 py-1.5 text-sm focus:border-violet-500/40"
                     >
                       {VENICE_CHAT_MODELS.map(m => (
                         <option key={m.id} value={m.id}>{m.label}</option>
@@ -739,7 +739,7 @@ Current context: User is requesting images of Elara at the safari camp, now spec
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={handleChatKeyDown}
                       placeholder="Ask the agent... (e.g. Generate a cyberpunk landscape and describe it)"
-                      className="flex-1 resize-y min-h-[44px] max-h-32 rounded-2xl bg-black/40 border border-white/10 p-3 text-sm placeholder:text-white/40 focus:border-violet-500/40 focus:outline-none"
+                      className="flex-1 resize-y min-h-[44px] max-h-32 rounded-2xl fedda-input p-3 text-sm focus:border-violet-500/40"
                       rows={1}
                     />
                     <FeddaButton

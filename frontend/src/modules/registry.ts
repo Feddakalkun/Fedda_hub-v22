@@ -411,6 +411,20 @@ export const FEDDA_MODULES: FeddaModule[] = [
     card: veniceCard(21),
   },
   {
+    id: 'wan21-scail2',
+    sourceModuleId: 'wan-video',
+    label: 'SCAIL-2',
+    description: 'Animate a reference photo with dance/pose motion using SCAIL-2 GGUF.',
+    area: 'video',
+    pack: 'booster',
+
+    tabs: ['wan21-scail2'],
+    workflows: ['wan21-scail2'],
+    defaultTab: 'wan21-scail2',
+    Icon: Film,
+    card: veniceCard(30),
+  },
+  {
     id: 'ltx-img2vid',
     sourceModuleId: 'ltx-video',
     label: 'LTX Img2Vid',

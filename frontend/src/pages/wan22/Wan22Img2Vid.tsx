@@ -164,7 +164,7 @@ export const Wan22Img2Vid = () => {
             nsfw,
             ...(loraHigh ? { lora_high: { on: true, lora: loraHigh, strength: loraStrengthHigh } } : {}),
             ...(loraLow ? { lora_low: { on: true, lora: loraLow, strength: loraStrengthLow } } : {}),
-            client_id:   (comfyService as any).clientId,
+            client_id:   comfyService.clientId,
           },
         }),
       });
@@ -340,7 +340,7 @@ export const Wan22Img2Vid = () => {
             {/* Seed */}
             <div className="flex gap-1.5">
               <input type="number" value={seed} onChange={e => setSeed(parseInt(e.target.value))}
-                className="flex-1 bg-white/[0.02] border border-white/5 rounded-xl py-3 px-3 text-xs font-mono focus:border-violet-500/20 outline-none text-white/40" />
+                className="flex-1 rounded-xl fedda-input py-3 px-3 text-xs font-mono focus:border-violet-500/40 text-white/60" />
               <FeddaButton onClick={() => setSeed(-1)} variant={seed === -1 ? 'violet' : 'ghost'} className="p-3 rounded-xl transition-all">
                 <RefreshCw className="w-3.5 h-3.5" />
               </FeddaButton>
@@ -352,7 +352,7 @@ export const Wan22Img2Vid = () => {
             <FeddaButton disabled={!canGenerate}
               onClick={handleGenerate}
               variant="violet"
-              className="w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] transition-all duration-500 flex items-center justify-center gap-3 disabled:bg-white/5 disabled:text-white/10">
+              className="w-full py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
               <span>{isGenerating ? 'Generating...' : 'Generate'}</span>
             </FeddaButton>

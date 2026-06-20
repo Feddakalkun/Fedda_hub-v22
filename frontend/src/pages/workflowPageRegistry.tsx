@@ -15,6 +15,7 @@ import { Wan22Vid2Vid } from './wan22/Wan22Vid2Vid';
 import { Wan22Img2Vid } from './wan22/Wan22Img2Vid';
 import { Wan226FramesPage } from './wan22/Wan226FramesPage';
 import { Wan21SteadyDancerPage } from './wan21/Wan21SteadyDancerPage';
+import { Wan21Scail2Page } from './wan21/Wan21Scail2Page';
 import { LtxImg2VidPage } from './ltx/LtxImg2VidPage';
 import { LtxFlfPage } from './ltx/LtxFlfPage';
 
@@ -45,6 +46,7 @@ export const VIDEO_WORKFLOW_PAGES: Record<string, ComponentType> = {
   'wan22-img2vid': Wan22Img2Vid,
   'wan22-img2vid-6frames': Wan226FramesPage,
   'wan21-steady-dancer': Wan21SteadyDancerPage,
+  'wan21-scail2': Wan21Scail2Page,
   'ltx': LtxImg2VidPage,
   'ltx-img2vid': LtxImg2VidPage,
   'ltx-flf': LtxFlfPage,

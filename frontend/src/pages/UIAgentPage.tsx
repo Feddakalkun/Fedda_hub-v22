@@ -319,7 +319,7 @@ export const UIAgentPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan,
-          client_id: (comfyService as any).clientId,
+          client_id: comfyService.clientId,
         }),
       });
       const data = await response.json().catch(() => ({}));

@@ -234,7 +234,7 @@ export function VeniceChatPage() {
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm focus:border-violet-500/40"
+              className="rounded-lg fedda-input px-3 py-1.5 text-sm focus:border-violet-500/40"
             >
               {VENICE_CHAT_MODELS.map(m => (
                 <option key={m.id} value={m.id}>{m.label}</option>
@@ -319,7 +319,7 @@ export function VeniceChatPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask the Venice Agent anything... (Shift+Enter for new line)"
-              className="flex-1 resize-y min-h-[48px] max-h-[140px] rounded-2xl bg-black/40 border border-white/10 p-3 text-sm placeholder:text-white/40 focus:border-violet-500/40 focus:outline-none"
+              className="flex-1 resize-y min-h-[48px] max-h-[140px] rounded-2xl fedda-input p-3 text-sm focus:border-violet-500/40"
               rows={1}
             />
 

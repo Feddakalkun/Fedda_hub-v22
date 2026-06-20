@@ -363,7 +363,7 @@ export const ZImageDualLoraPage = () => {
           lora_main_strength: Number(loraMainStrength),
           lora_detail_name: loraDetailName,
           lora_detail_strength: Number(loraDetailStrength),
-          client_id: (comfyService as any).clientId,
+          client_id: comfyService.clientId,
         },
       };
       const response = await fetch(`${BACKEND_API.BASE_URL}${BACKEND_API.ENDPOINTS.GENERATE}`, {

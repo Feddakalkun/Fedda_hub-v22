@@ -253,7 +253,7 @@ export const Wan22Vid2Vid = () => {
             prompt3: prompt3.trim() || prompt1.trim(),
             prompt4: prompt4.trim() || prompt1.trim(),
             seed: seed === -1 ? Math.floor(Math.random() * 10_000_000_000) : seed,
-            client_id: (comfyService as any).clientId,
+            client_id: comfyService.clientId,
             // Slow motion toggle: set save_output on all 5 slow-motion VHS nodes
             slow_motion_1: slowMotion,
             slow_motion_2: slowMotion,

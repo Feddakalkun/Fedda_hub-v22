@@ -411,7 +411,7 @@ export const QwenMultiAnglesPage = () => {
       const payload = {
         workflow_id: workflowId,
         params: {
-          client_id: (comfyService as any).clientId,
+          client_id: comfyService.clientId,
           image: uploadedImageName,
           horizontal_angle: isMultiShot
             ? shotPayload.map((shot) => toWorkflowHorizontalAngle(shot.h))

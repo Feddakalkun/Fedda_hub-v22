@@ -440,7 +440,7 @@ export function GrokPage() {
                 value={grokApiKey}
                 onChange={e => saveGrokKey(e.target.value)}
                 placeholder="Bearer eyJ..."
-                className="rounded-lg bg-black/40 border border-white/10 p-2 text-sm placeholder:text-white/30 focus:border-blue-500/40 focus:outline-none font-mono"
+                className="rounded-lg fedda-input p-2 text-sm font-mono focus:border-blue-500/40"
               />
             </div>
             <div className="text-[10px] text-white/40">Stored locally only</div>
@@ -495,7 +495,7 @@ export function GrokPage() {
                     <select
                       value={chatModel}
                       onChange={(e) => setChatModel(e.target.value)}
-                      className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500/40"
+                      className="rounded-lg fedda-input px-3 py-1.5 text-sm focus:border-blue-500/40"
                     >
                       {GROK_CHAT_MODELS.map(m => (
                         <option key={m.id} value={m.id}>{m.label}</option>
@@ -594,7 +594,7 @@ export function GrokPage() {
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={handleChatKeyDown}
                       placeholder="Ask Grok anything... (try 'generate an image of ... at sunset')"
-                      className="flex-1 resize-y min-h-[44px] max-h-32 rounded-2xl bg-black/40 border border-white/10 p-3 text-sm placeholder:text-white/40 focus:border-blue-500/40 focus:outline-none"
+                      className="flex-1 resize-y min-h-[44px] max-h-32 rounded-2xl fedda-input p-3 text-sm focus:border-blue-500/40"
                       rows={1}
                     />
                     <FeddaButton
@@ -625,7 +625,7 @@ export function GrokPage() {
                     value={imgPrompt}
                     onChange={e => setImgPrompt(e.target.value)}
                     placeholder="A cinematic portrait of a cyberpunk samurai in neon rain..."
-                    className="w-full min-h-[90px] resize-y rounded-xl bg-black/40 border border-white/10 p-4 text-sm placeholder:text-white/30 focus:border-blue-500/40 focus:outline-none transition"
+                    className="w-full min-h-[90px] resize-y rounded-xl fedda-input p-4 text-sm focus:border-blue-500/40"
                   />
                 </div>
 
@@ -638,7 +638,7 @@ export function GrokPage() {
                     <select
                       value={imgModel}
                       onChange={e => setImgModel(e.target.value)}
-                      className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm focus:border-blue-500/40 focus:outline-none transition"
+                      className="w-full rounded-xl fedda-input p-3 text-sm focus:border-blue-500/40"
                     >
                       {GROK_IMAGE_MODELS.map(m => (
                         <option key={m.id} value={m.id}>{m.label}</option>
@@ -655,7 +655,7 @@ export function GrokPage() {
                       value={negativePrompt}
                       onChange={e => setNegativePrompt(e.target.value)}
                       placeholder="blurry, low quality, deformed"
-                      className="w-full rounded-xl bg-black/40 border border-white/10 p-3 text-sm placeholder:text-white/30 focus:border-blue-500/40 focus:outline-none transition"
+                      className="w-full rounded-xl fedda-input p-3 text-sm focus:border-blue-500/40"
                     />
                   </div>
                 </div>
@@ -668,11 +668,11 @@ export function GrokPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <div className="text-[10px] text-white/50">Width</div>
-                      <input type="number" value={width} onChange={e=>setWidth(+e.target.value)} className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm focus:border-blue-500/40 focus:outline-none" />
+                      <input type="number" value={width} onChange={e=>setWidth(+e.target.value)} className="w-full rounded-xl fedda-input p-2.5 text-sm focus:border-blue-500/40" />
                     </div>
                     <div className="space-y-1">
                       <div className="text-[10px] text-white/50">Height</div>
-                      <input type="number" value={height} onChange={e=>setHeight(+e.target.value)} className="w-full rounded-xl bg-black/40 border border-white/10 p-2.5 text-sm focus:border-blue-500/40 focus:outline-none" />
+                      <input type="number" value={height} onChange={e=>setHeight(+e.target.value)} className="w-full rounded-xl fedda-input p-2.5 text-sm focus:border-blue-500/40" />
                     </div>
                   </div>
                 </div>
