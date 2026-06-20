@@ -213,6 +213,7 @@
         "ComfyUI-WanAnimatePreprocess",
         "ComfyUI-VideoHelperSuite",
         "ComfyUI-Frame-Interpolation",
+        "ComfyUI-GGUF",
         "ComfyMath",
         "comfy_mtb"
       ],

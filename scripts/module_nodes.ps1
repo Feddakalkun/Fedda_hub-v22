@@ -84,6 +84,8 @@ function Get-FeddaNodeConfig {
                     "InpaintStitchImproved" = "ComfyUI-Inpaint-CropAndStitch"
                     "LayerMask: PersonMaskUltra V2" = "ComfyUI_LayerStyle_Advance"
                     "Text Multiline" = "was-node-suite-comfyui"
+                    "UnetLoaderGGUF" = "ComfyUI-GGUF"
+                    "DualCLIPLoaderGGUF" = "ComfyUI-GGUF"
                     # Add more class_type -> node package mappings here as new workflows are introduced
                 }
 
