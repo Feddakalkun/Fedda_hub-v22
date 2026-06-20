@@ -81,6 +81,21 @@ try {
 }
 
 # ============================================================================
+# 3. RUN FULL MAINTENANCE (nodes, deps, frontend)
+# ============================================================================
+$UpdateLogic = Join-Path $ScriptPath "update_logic.ps1"
+if (Test-Path $UpdateLogic) {
+    if (-not $SilentMode) {
+        Write-Host "`n  Running full maintenance (nodes, deps, frontend)..." -ForegroundColor Yellow
+    }
+    & powershell -ExecutionPolicy Bypass -File "$UpdateLogic" $(if ($SilentMode) { "-SilentMode" })
+} else {
+    if (-not $SilentMode) {
+        Write-Host "`n  [WARN] update_logic.ps1 not found - skipping node/dep maintenance." -ForegroundColor Yellow
+    }
+}
+
+# ============================================================================
 # DONE
 # ============================================================================
 if (-not $SilentMode) {
