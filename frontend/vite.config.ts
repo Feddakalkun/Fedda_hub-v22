@@ -63,7 +63,19 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/comfy/, ''),
-        configure: quietProxyErrors(),
+        configure: (proxy: any) => {
+          // ComfyUI rejects requests where Origin != Host.
+          // changeOrigin sets Host=target but Vite forwards the browser's Origin unchanged.
+          // For WebSocket upgrades browsers always send Origin, so the WS connection gets 403.
+          // Fix: override Origin to match the target for both HTTP and WS proxied requests.
+          proxy.on('proxyReq', (proxyReq: any) => {
+            proxyReq.setHeader('origin', 'http://127.0.0.1:8199');
+          });
+          proxy.on('proxyReqWs', (proxyReq: any) => {
+            proxyReq.setHeader('origin', 'http://127.0.0.1:8199');
+          });
+          quietProxyErrors()(proxy);
+        },
       },
       '/ollama': {
         target: 'http://127.0.0.1:11434',
