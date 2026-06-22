@@ -19,6 +19,8 @@ import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
 import { WorkflowShell } from '../../components/layout/WorkflowShell';
 import { triggerMediaDownload } from '../../utils/mediaStore';
+import { inputBase, smallLabel, panel, cn } from '../../lib/styles';
+import { Field, NeutralButton } from '../../components/ui/FeddaPrimitives';
 
 type ComfyImage = { filename: string; subfolder?: string; type?: string };
 
@@ -38,10 +40,6 @@ const STYLES = [
   'Soft Diffused Intimacy',
   'Authentic Unposed Moment',
 ];
-
-const inputBase = 'w-full rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-white/25 placeholder:text-zinc-600';
-const smallLabel = 'text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500';
-const panel = 'rounded-xl border border-white/10 bg-[#09090b] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]';
 
 function comfyViewUrl(filename: string | null, type: 'input' | 'output' = 'input', subfolder = '') {
   if (!filename) return null;
@@ -72,25 +70,6 @@ function fmtTime(seconds: number) {
   return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
-function classNames(...items: Array<string | false | null | undefined>) {
-  return items.filter(Boolean).join(' ');
-}
-
-const Field = ({
-  label,
-  children,
-  className = '',
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) => (
-  <div className={classNames('space-y-1.5', className)}>
-    <span className={smallLabel}>{label}</span>
-    {children}
-  </div>
-);
-
 const StageHeader = ({ step, title, detail }: { step: string; title: string; detail?: string }) => (
   <div className="mb-3 flex items-start justify-between gap-3">
     <div>
@@ -99,32 +78,6 @@ const StageHeader = ({ step, title, detail }: { step: string; title: string; det
       {detail ? <p className="mt-1 text-xs text-zinc-500">{detail}</p> : null}
     </div>
   </div>
-);
-
-const NeutralButton = ({
-  children,
-  onClick,
-  disabled,
-  type = 'button',
-  className = '',
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  type?: 'button' | 'submit';
-  className?: string;
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    className={classNames(
-      'inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40',
-      className,
-    )}
-  >
-    {children}
-  </button>
 );
 
 const UploadDrop = ({
@@ -833,6 +786,7 @@ export function Wan21SteadyDancerPage() {
       isGenerating={isGenerating}
       canGenerate={canRun}
       leftClassName="bg-[#050505]"
+      workflowId="wan21-steady-dancer"
       hideOutputPane
       output={null}
     >
@@ -985,7 +939,7 @@ export function Wan21SteadyDancerPage() {
                   value={posePrompt}
                   onChange={(event) => setPosePrompt(event.target.value)}
                   rows={4}
-                  className={classNames(inputBase, 'resize-y leading-relaxed')}
+                  className={cn(inputBase, 'resize-y leading-relaxed')}
                 />
               </Field>
               <div className="grid gap-3 md:grid-cols-4">
@@ -1073,7 +1027,7 @@ export function Wan21SteadyDancerPage() {
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
             <div className="space-y-3">
               <Field label="Steady Dancer prompt">
-                <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={4} className={classNames(inputBase, 'resize-y leading-relaxed')} />
+                <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={4} className={cn(inputBase, 'resize-y leading-relaxed')} />
               </Field>
               <div className="grid gap-3 sm:grid-cols-4">
                 <Field label="Width">
@@ -1128,7 +1082,7 @@ export function Wan21SteadyDancerPage() {
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs text-zinc-400">
             <span className="inline-flex items-center gap-2">
-              <Check className={classNames('h-3.5 w-3.5', finalSubjectFile ? 'text-zinc-300' : 'text-zinc-700')} />
+              <Check className={cn('h-3.5 w-3.5', finalSubjectFile ? 'text-zinc-300' : 'text-zinc-700')} />
               {subjectModeLabel}
             </span>
             <span className="font-mono text-zinc-600">{requestedFrames} frames @ {fps} fps</span>

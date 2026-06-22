@@ -8,11 +8,8 @@ import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
 import { WorkflowShell } from '../../components/layout/WorkflowShell';
 import { triggerMediaDownload } from '../../utils/mediaStore';
-
-const inputBase =
-  'w-full rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-white/25 placeholder:text-zinc-600';
-const smallLabel = 'text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500';
-const panel = 'rounded-xl border border-white/10 bg-[#09090b] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]';
+import { inputBase, panel, cn } from '../../lib/styles';
+import { Field, NeutralButton } from '../../components/ui/FeddaPrimitives';
 
 function isScail2Url(url: string) {
   return /(scail2|scail-2|SCAIL2|video%2fscail|video\/scail)/i.test(url);
@@ -20,49 +17,6 @@ function isScail2Url(url: string) {
 
 const QUALITY_SCALES: Record<number, number> = { [-4]: 0.25, [-3]: 1/3, [-2]: 0.5, [-1]: 0.75, [0]: 1.0, [1]: 1.25, [2]: 1.5, [3]: 1.75, [4]: 2.0 };
 const QUALITY_STEPS = [-4, -3, -2, -1, 0, 1, 2, 3, 4] as const;
-
-function classNames(...items: Array<string | false | null | undefined>) {
-  return items.filter(Boolean).join(' ');
-}
-
-const Field = ({
-  label,
-  children,
-  className = '',
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) => (
-  <div className={classNames('space-y-1.5', className)}>
-    <span className={smallLabel}>{label}</span>
-    {children}
-  </div>
-);
-
-const NeutralButton = ({
-  children,
-  onClick,
-  disabled,
-  className = '',
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  className?: string;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    className={classNames(
-      'inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40',
-      className,
-    )}
-  >
-    {children}
-  </button>
-);
 
 const UploadDrop = ({
   accept,
@@ -442,6 +396,7 @@ export function Wan21Scail2Page() {
       isGenerating={isGenerating}
       canGenerate={canRun}
       leftClassName="bg-[#050505]"
+      workflowId="wan21-scail2"
       hideOutputPane
       output={null}
     >
@@ -526,7 +481,7 @@ export function Wan21Scail2Page() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   rows={4}
-                  className={classNames(inputBase, 'resize-y leading-relaxed')}
+                  className={cn(inputBase, 'resize-y leading-relaxed')}
                   placeholder="a person dancing, cinematic lighting..."
                 />
               </Field>
@@ -544,7 +499,7 @@ export function Wan21Scail2Page() {
                     value={negative}
                     onChange={(e) => setNegative(e.target.value)}
                     rows={2}
-                    className={classNames(inputBase, 'mt-2 resize-y leading-relaxed')}
+                    className={cn(inputBase, 'mt-2 resize-y leading-relaxed')}
                     placeholder="blurry, distorted, low quality..."
                   />
                 )}
@@ -580,7 +535,7 @@ export function Wan21Scail2Page() {
                       key={step}
                       type="button"
                       onClick={() => setQualityStep(step)}
-                      className={classNames(
+                      className={cn(
                         'px-2.5 py-1.5 rounded-lg border text-xs font-mono font-semibold transition',
                         qualityStep === step
                           ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-300'

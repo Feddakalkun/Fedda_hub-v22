@@ -1,5 +1,6 @@
 import type { ElementType, ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
+import { WorkflowDownloadBanner } from '../ui/WorkflowDownloadBanner';
 
 interface WorkflowShellProps {
   title: string;
@@ -14,6 +15,7 @@ interface WorkflowShellProps {
   leftClassName?: string;
   outputClassName?: string;
   hideOutputPane?: boolean;
+  workflowId?: string;
 }
 
 export const WorkflowShell = ({
@@ -29,6 +31,7 @@ export const WorkflowShell = ({
   leftClassName = '',
   outputClassName = '',
   hideOutputPane = false,
+  workflowId,
 }: WorkflowShellProps) => {
   return (
     <div className={`workflow-shell ${hideOutputPane ? 'workflow-shell-no-output' : ''}`.trim()}>
@@ -59,6 +62,8 @@ export const WorkflowShell = ({
         </div>
 
         {preview ? <div className="workflow-shell-preview">{preview}</div> : null}
+
+        {workflowId && <WorkflowDownloadBanner workflowId={workflowId} />}
 
         <div className="workflow-scroll">
           {children}

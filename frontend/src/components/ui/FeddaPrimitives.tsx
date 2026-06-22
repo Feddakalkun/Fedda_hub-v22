@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { cn, smallLabel } from '../../lib/styles';
 
 type FeddaButtonVariant = 'ghost' | 'violet' | 'cyan' | 'emerald';
 
@@ -49,3 +50,44 @@ interface FeddaSectionTitleProps {
 export const FeddaSectionTitle = ({ children, className = '' }: FeddaSectionTitleProps) => {
   return <p className={`fedda-kicker ${className}`.trim()}>{children}</p>;
 };
+
+interface FieldProps {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}
+
+export const Field = ({ label, children, className = '' }: FieldProps) => (
+  <div className={cn('space-y-1.5', className)}>
+    <span className={smallLabel}>{label}</span>
+    {children}
+  </div>
+);
+
+interface NeutralButtonProps {
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: 'button' | 'submit';
+  className?: string;
+}
+
+export const NeutralButton = ({
+  children,
+  onClick,
+  disabled,
+  type = 'button',
+  className = '',
+}: NeutralButtonProps) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      'inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40',
+      className,
+    )}
+  >
+    {children}
+  </button>
+);

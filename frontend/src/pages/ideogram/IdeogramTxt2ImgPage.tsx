@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 import { Download, ExternalLink, Image as ImageIcon, Loader2, Play, Plus, Trash2, Wand2 } from 'lucide-react';
 import { BACKEND_API } from '../../config/api';
 import { useToast } from '../../components/ui/Toast';
@@ -8,54 +7,8 @@ import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
 import { WorkflowShell } from '../../components/layout/WorkflowShell';
 import { triggerMediaDownload } from '../../utils/mediaStore';
-
-const inputBase =
-  'w-full rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-white/25 placeholder:text-zinc-600';
-const smallLabel = 'text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500';
-const panel = 'rounded-xl border border-white/10 bg-[#09090b] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]';
-
-function cn(...items: Array<string | false | null | undefined>) {
-  return items.filter(Boolean).join(' ');
-}
-
-const Field = ({
-  label,
-  children,
-  className = '',
-}: {
-  label: string;
-  children: ReactNode;
-  className?: string;
-}) => (
-  <div className={cn('space-y-1.5', className)}>
-    <span className={smallLabel}>{label}</span>
-    {children}
-  </div>
-);
-
-const NeutralButton = ({
-  children,
-  onClick,
-  disabled,
-  className = '',
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  className?: string;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      'inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40',
-      className,
-    )}
-  >
-    {children}
-  </button>
-);
+import { inputBase, panel, cn } from '../../lib/styles';
+import { Field, NeutralButton } from '../../components/ui/FeddaPrimitives';
 
 const QUALITY_PRESETS = {
   Turbo: { steps: 12, mu: 0.5, std: 1.75 },
@@ -419,6 +372,7 @@ export function IdeogramTxt2ImgPage() {
       canGenerate={canRun}
       leftClassName="bg-[#050505]"
       hideOutputPane
+      workflowId="ideogram-txt2img"
       output={null}
     >
       <div className="mx-auto max-w-5xl space-y-4 px-4 pb-8">

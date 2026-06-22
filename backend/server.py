@@ -2885,6 +2885,54 @@ async def get_workflow_model_status(workflow_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/workflow/download-live-progress/{workflow_id}")
+async def get_workflow_download_live_progress(workflow_id: str):
+    """Return current on-disk byte counts for each file the workflow's HuggingFaceDownloader will fetch.
+    The frontend polls this every 2 s while the downloader node is executing to show live progress."""
+    try:
+        mappings = workflow_service.load_mapping()
+        if workflow_id not in mappings:
+            return {"files": []}
+        mapping = mappings[workflow_id]
+        path = workflow_service.get_workflow_path(mapping.get("filename", ""))
+        if not path:
+            return {"files": []}
+        with open(path, "r", encoding="utf-8-sig") as f:
+            workflow = json.load(f)
+        result = []
+        for item in _parse_workflow_download_links(workflow):
+            target = Path(item["path"])
+            current_bytes = 0
+            is_complete = False
+            try:
+                if target.exists() and target.is_file():
+                    sz = target.stat().st_size
+                    if sz > 10_000:
+                        current_bytes = sz
+                        is_complete = True
+                    else:
+                        current_bytes = sz
+                # Some download managers write partial files with these suffixes
+                for suffix in (".incomplete", ".part", ".tmp"):
+                    partial = Path(str(target) + suffix)
+                    try:
+                        if partial.exists() and partial.is_file():
+                            current_bytes = max(current_bytes, partial.stat().st_size)
+                    except OSError:
+                        pass
+            except OSError:
+                pass
+            result.append({
+                "filename": item["filename"],
+                "folder": item["folder"],
+                "exists": is_complete,
+                "currentBytes": current_bytes,
+            })
+        return {"files": result}
+    except Exception as e:
+        return {"files": [], "error": str(e)}
+
+
 @app.post("/api/generate")
 async def generate(req: GenerateRequest):
     """
