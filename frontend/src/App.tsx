@@ -17,6 +17,7 @@ import { GrokPage } from './pages/GrokPage';
 import { ZonosTTSPage } from './pages/ZonosTTSPage';
 import { UIAgentPage } from './pages/UIAgentPage';
 import { ModuleUnavailablePage } from './pages/ModuleUnavailablePage';
+import { GlobalGalleryPanel } from './components/layout/GlobalGalleryPanel';
 import {
   ACTIVE_TAB_STORAGE_KEY,
   APP_VERSION_LABEL,
@@ -217,24 +218,27 @@ function FeddaApp() {
           <TopSystemStrip />
         </header>
 
-        <div className="flex-1 min-h-0 overflow-hidden">
-          {view === 'home' ? (
-            <RichHome onSelect={openHomeCard} />
-          ) : view === 'image-section' ? (
-            hasImageModules ? (
-              <ImageSectionCards onSelect={openTab} onBack={goHome} />
+        <div className="flex-1 min-h-0 flex overflow-hidden">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            {view === 'home' ? (
+              <RichHome onSelect={openHomeCard} />
+            ) : view === 'image-section' ? (
+              hasImageModules ? (
+                <ImageSectionCards onSelect={openTab} onBack={goHome} />
+              ) : (
+                <ModuleUnavailablePage tab="image" moduleLabel="Image Studio" pack="core" />
+              )
+            ) : view === 'video-section' ? (
+              hasVideoModules ? (
+                <VideoSectionCards onSelect={openTab} onBack={goHome} />
+              ) : (
+                <ModuleUnavailablePage tab="video" moduleLabel="Video Studio" pack="booster" />
+              )
             ) : (
-              <ModuleUnavailablePage tab="image" moduleLabel="Image Studio" pack="core" />
-            )
-          ) : view === 'video-section' ? (
-            hasVideoModules ? (
-              <VideoSectionCards onSelect={openTab} onBack={goHome} />
-            ) : (
-              <ModuleUnavailablePage tab="video" moduleLabel="Video Studio" pack="booster" />
-            )
-          ) : (
-            renderWorkspace()
-          )}
+              renderWorkspace()
+            )}
+          </div>
+          <GlobalGalleryPanel />
         </div>
       </main>
     </div>

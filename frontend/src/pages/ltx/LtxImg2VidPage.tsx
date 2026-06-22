@@ -12,22 +12,29 @@ import { WorkflowWorkbench } from '../../components/layout/WorkflowWorkbench';
 import { WorkflowVideoPreviewStrip } from '../../components/layout/WorkflowVideoPreviewStrip';
 import { LTX_RATIOS, getLtxDimensions } from '../../config/ltx';
 
-function RefImageSlot({ preview, uploading, onFile }: {
+function RefImageSlot({ preview, uploading, onFile, onUrl }: {
   preview: string | null;
   uploading: boolean;
   onFile: (file: File) => void;
+  onUrl?: (url: string) => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
   return (
     <div
       onClick={() => ref.current?.click()}
       onDrop={(event) => {
         event.preventDefault();
+        setDragOver(false);
         const file = event.dataTransfer.files[0];
-        if (file?.type.startsWith('image/')) onFile(file);
+        if (file?.type.startsWith('image/')) { onFile(file); return; }
+        const url = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
+        if (url && onUrl) onUrl(url.trim());
       }}
-      onDragOver={(event) => event.preventDefault()}
+      onDragOver={(event) => { event.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
       className={`relative cursor-pointer overflow-hidden rounded-xl border border-dashed transition-all group ${
+        dragOver ? 'border-violet-400/60 bg-violet-500/10' :
         preview ? 'border-zinc-500/40 bg-black/40' : 'border-white/[0.08] bg-white/[0.02] hover:border-white/25'
       }`}
       style={{ height: 150 }}
@@ -112,6 +119,19 @@ export const LtxImg2VidPage = () => {
     }
   };
 
+  const uploadImageFromUrl = async (url: string) => {
+    setImageUploading(true);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch image (${res.status})`);
+      const blob = await res.blob();
+      await uploadImage(new File([blob], 'gallery-image.png', { type: blob.type || 'image/png' }));
+    } catch (err: any) {
+      toast(err.message || 'Could not load image from URL', 'error');
+      setImageUploading(false);
+    }
+  };
+
   const buildPromptFromReference = async () => {
     if (!imageFilename || !imagePreview || referenceCaptioning) return;
     setReferenceCaptioning(true);
@@ -188,7 +208,7 @@ export const LtxImg2VidPage = () => {
             <FeddaSectionTitle className="text-white/30">Reference Image</FeddaSectionTitle>
             <ImageIcon className="h-3.5 w-3.5 text-white/25" />
           </div>
-          <RefImageSlot preview={imagePreview} uploading={imageUploading} onFile={uploadImage} />
+          <RefImageSlot preview={imagePreview} uploading={imageUploading} onFile={uploadImage} onUrl={uploadImageFromUrl} />
           {imageFilename && <p className="mt-2 truncate font-mono text-[8px] text-white/35">{imageFilename}</p>}
         </section>
 

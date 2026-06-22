@@ -19,6 +19,7 @@ import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { comfyService } from '../../services/comfyService';
 import { useToast } from '../../components/ui/Toast';
 import { usePersistentState } from '../../hooks/usePersistentState';
+import { inputBase } from '../../lib/styles';
 
 type BoxSource = 'none' | 'detected' | 'fallback' | 'manual';
 
@@ -67,7 +68,6 @@ const randomFrom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)
 const randomSeed = () => Math.floor(Math.random() * 9_000_000_000_000) + 1;
 
 const buttonBase = 'inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45';
-const inputBase = 'w-full rounded-lg border border-white/10 bg-[#090a0d] px-3 py-2 text-xs text-white/85 outline-none transition focus:border-white/25';
 const panelBase = 'rounded-lg border border-white/10 bg-[#0d0e12]';
 
 function choosePreferredBoxIndex(boxes: DualBox[], phrase: string) {

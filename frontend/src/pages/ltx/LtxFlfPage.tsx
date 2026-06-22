@@ -12,23 +12,30 @@ import { WorkflowWorkbench } from '../../components/layout/WorkflowWorkbench';
 import { WorkflowVideoPreviewStrip } from '../../components/layout/WorkflowVideoPreviewStrip';
 import { LTX_RATIOS, getLtxDimensions, getSafeLtxAspect } from '../../config/ltx';
 
-function FrameSlot({ label, preview, uploading, onFile }: {
+function FrameSlot({ label, preview, uploading, onFile, onUrl }: {
   label: string;
   preview: string | null;
   uploading: boolean;
   onFile: (file: File) => void;
+  onUrl?: (url: string) => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
   return (
     <div
       onClick={() => ref.current?.click()}
       onDrop={(event) => {
         event.preventDefault();
+        setDragOver(false);
         const file = event.dataTransfer.files[0];
-        if (file?.type.startsWith('image/')) onFile(file);
+        if (file?.type.startsWith('image/')) { onFile(file); return; }
+        const url = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
+        if (url && onUrl) onUrl(url.trim());
       }}
-      onDragOver={(event) => event.preventDefault()}
+      onDragOver={(event) => { event.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
       className={`relative min-h-[124px] flex-1 cursor-pointer overflow-hidden rounded-xl border border-dashed transition-all group ${
+        dragOver ? 'border-violet-400/60 bg-violet-500/10' :
         preview ? 'border-zinc-500/40 bg-black/40' : 'border-white/[0.08] bg-white/[0.02] hover:border-white/25'
       }`}
     >
@@ -122,6 +129,23 @@ export const LtxFlfPage = () => {
     }
   };
 
+  const uploadFrameFromUrl = async (
+    url: string,
+    setFile: (filename: string) => void,
+    setUploading: (value: boolean) => void,
+  ) => {
+    setUploading(true);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch image (${res.status})`);
+      const blob = await res.blob();
+      await uploadFrame(new File([blob], 'gallery-image.png', { type: blob.type || 'image/png' }), setFile, setUploading);
+    } catch (err: any) {
+      toast(err.message || 'Could not load image from URL', 'error');
+      setUploading(false);
+    }
+  };
+
   const handleGenerate = () => {
     if (!firstFilename || !lastFilename || !prompt.trim() || run.isGenerating) return;
     const dims = getLtxDimensions(aspectRatio);
@@ -174,12 +198,14 @@ export const LtxFlfPage = () => {
               preview={firstPreview}
               uploading={firstUploading}
               onFile={(file) => uploadFrame(file, setFirstFilename, setFirstUploading)}
+              onUrl={(url) => uploadFrameFromUrl(url, setFirstFilename, setFirstUploading)}
             />
             <FrameSlot
               label="Last"
               preview={lastPreview}
               uploading={lastUploading}
               onFile={(file) => uploadFrame(file, setLastFilename, setLastUploading)}
+              onUrl={(url) => uploadFrameFromUrl(url, setLastFilename, setLastUploading)}
             />
           </div>
           {firstFilename && lastFilename && <p className="mt-2 font-mono text-[8px] text-white/35">Both frames ready</p>}
