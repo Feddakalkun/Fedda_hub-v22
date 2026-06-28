@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, CheckCircle2, ListOrdered, Loader2, Sparkles } from 'lucide-react';
 import { WorkflowShell } from '../../components/layout/WorkflowShell';
 import { WorkflowPreviewBar } from '../../components/layout/WorkflowPreviewBar';
 import { SimpleImageCockpit, type SimpleImageLoraEntry, type SimpleImagePromptPreset } from '../../components/workflows/SimpleImageCockpit';
@@ -198,6 +198,20 @@ export const Txt2ImgPage = ({
   const [modelStatusError, setModelStatusError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Batch queue state
+  const [batchRaw, setBatchRaw] = usePersistentState(key('batch_raw'), '');
+  const [batchExpanded, setBatchExpanded] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number } | null>(null);
+  const batchQueueRef = useRef<string[]>([]);
+  const completionHandledRef = useRef(false);
+  const submitRef = useRef<(promptText: string) => Promise<void>>();
+  const onCompleteRef = useRef<(promptId: string, images?: Array<{ filename: string; subfolder: string; type: string }>) => void>();
+
+  const parsedBatchPrompts = useMemo(
+    () => batchRaw.split('\n').map((l) => l.trim()).filter(Boolean),
+    [batchRaw]
+  );
+
   // Auto-set size to original image dimensions for SDXL Inpaint Automask
   useEffect(() => {
     if (requireImageUpload && uploadedImage && workflowId === 'sdxl-inpaint-automask') {
@@ -373,30 +387,25 @@ export const Txt2ImgPage = ({
   useEffect(() => {
     if (execState !== 'done' || !pendingPromptId) return;
     const promptId = pendingPromptId;
+    onCompleteRef.current?.(promptId);
+  }, [execState, pendingPromptId]);
 
-    const fetchAndShow = async () => {
+  // HTTP polling fallback — handles completion when WebSocket is unavailable
+  useEffect(() => {
+    if (!pendingPromptId) return;
+    const capturedId = pendingPromptId;
+    const intervalId = setInterval(async () => {
+      if (completionHandledRef.current) { clearInterval(intervalId); return; }
       try {
-        const response = await fetch(`${BACKEND_API.BASE_URL}/api/generate/status/${promptId}?workflow_id=${encodeURIComponent(workflowId)}`);
-        const data = await response.json();
-        const images: Array<{ filename: string; subfolder: string; type: string }> = data.images ?? [];
-        if (images.length > 0) {
-          const image = images[images.length - 1];
-          const url = `/comfy/view?filename=${encodeURIComponent(image.filename)}&subfolder=${encodeURIComponent(image.subfolder)}&type=${image.type}`;
-          setCurrentImage(url);
-          setHistory((prev) => (prev.includes(url) ? prev : [url, ...prev.slice(0, 29)]));
-          toast('Complete', 'success');
-        }
-      } catch {
-        // Live output events usually cover this path.
-      } finally {
-        setIsGenerating(false);
-        setPendingPromptId(null);
-        clearOutputs();
-      }
-    };
-
-    fetchAndShow();
-  }, [clearOutputs, execState, pendingPromptId, setCurrentImage, setHistory, toast, workflowId]);
+        const resp = await fetch(`${BACKEND_API.BASE_URL}/api/generate/status/${capturedId}?workflow_id=${encodeURIComponent(workflowId)}`);
+        const data = await resp.json();
+        if (data.status !== 'completed') return;
+        clearInterval(intervalId);
+        onCompleteRef.current?.(capturedId, data.images);
+      } catch {}
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [pendingPromptId, workflowId]);
 
   useEffect(() => {
     if (execState === 'error') {
@@ -433,21 +442,9 @@ export const Txt2ImgPage = ({
     }
   };
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() || isGenerating) return;
-    if (requireImageUpload && !uploadedImageName) {
-      toast(`${familyLabel}: upload a reference image first`, 'error');
-      return;
-    }
-    if (
-      allowedResolutions.length > 0 &&
-      !allowedResolutions.some((resolution) => resolution.w === width && resolution.h === height)
-    ) {
-      toast(`${familyLabel}: unsupported resolution ${width}x${height}`, 'error');
-      return;
-    }
-
-    setIsGenerating(true);
+  // Core API submission — called by both single generate and batch runner
+  const _submitGeneration = async (promptText: string) => {
+    completionHandledRef.current = false;
     clearOutputs();
 
     try {
@@ -459,7 +456,7 @@ export const Txt2ImgPage = ({
         // Execution can continue; the top strip falls back to raw node IDs.
       }
 
-      const effectivePrompt = [prompt.trim(), characterPrompt.trim()].filter(Boolean).join(', ');
+      const effectivePrompt = [promptText.trim(), characterPrompt.trim()].filter(Boolean).join(', ');
 
       const params: Record<string, unknown> = {
         prompt: effectivePrompt,
@@ -521,8 +518,85 @@ export const Txt2ImgPage = ({
       else throw new Error(data.detail || 'Failed');
     } catch (error: any) {
       toast(error.message || `${familyLabel} generate failed`, 'error');
+      batchQueueRef.current = [];
+      setBatchProgress(null);
       setIsGenerating(false);
     }
+  };
+
+  // Keep submitRef current so batch chain always uses latest params
+  submitRef.current = _submitGeneration;
+
+  // Completion handler: shows the image, then either starts the next batch item or ends
+  onCompleteRef.current = (promptId, prefetchedImages) => {
+    if (completionHandledRef.current) return;
+    completionHandledRef.current = true;
+
+    const finish = async () => {
+      try {
+        let images: Array<{ filename: string; subfolder: string; type: string }> = prefetchedImages ?? [];
+        if (images.length === 0) {
+          const resp = await fetch(`${BACKEND_API.BASE_URL}/api/generate/status/${promptId}?workflow_id=${encodeURIComponent(workflowId)}`);
+          const respData = await resp.json();
+          images = respData.images ?? [];
+        }
+        if (images.length > 0) {
+          const image = images[images.length - 1];
+          const url = `/comfy/view?filename=${encodeURIComponent(image.filename)}&subfolder=${encodeURIComponent(image.subfolder)}&type=${image.type}`;
+          setCurrentImage(url);
+          setHistory((prev) => (prev.includes(url) ? prev : [url, ...prev.slice(0, 29)]));
+          toast('Complete', 'success');
+        }
+      } catch {}
+
+      const nextPrompt = batchQueueRef.current.shift();
+      if (nextPrompt !== undefined) {
+        setBatchProgress((prev) => (prev ? { ...prev, current: prev.current + 1 } : null));
+        setPendingPromptId(null);
+        setPrompt(nextPrompt);
+        setTimeout(() => submitRef.current?.(nextPrompt), 300);
+      } else {
+        setBatchProgress(null);
+        setIsGenerating(false);
+        setPendingPromptId(null);
+        clearOutputs();
+      }
+    };
+
+    finish();
+  };
+
+  const handleGenerate = async () => {
+    if (!prompt.trim() || isGenerating) return;
+    if (requireImageUpload && !uploadedImageName) {
+      toast(`${familyLabel}: upload a reference image first`, 'error');
+      return;
+    }
+    if (
+      allowedResolutions.length > 0 &&
+      !allowedResolutions.some((resolution) => resolution.w === width && resolution.h === height)
+    ) {
+      toast(`${familyLabel}: unsupported resolution ${width}x${height}`, 'error');
+      return;
+    }
+    batchQueueRef.current = [];
+    setBatchProgress(null);
+    setIsGenerating(true);
+    await _submitGeneration(prompt);
+  };
+
+  const handleBatchStart = async () => {
+    if (parsedBatchPrompts.length === 0 || isGenerating) return;
+    if (requireImageUpload && !uploadedImageName) {
+      toast(`${familyLabel}: upload a reference image first`, 'error');
+      return;
+    }
+    const [first, ...rest] = parsedBatchPrompts;
+    batchQueueRef.current = rest;
+    setBatchProgress({ current: 1, total: parsedBatchPrompts.length });
+    setIsGenerating(true);
+    setPrompt(first);
+    await _submitGeneration(first);
   };
 
   const getLoraPreview = (loraPath: string) => {
@@ -589,6 +663,54 @@ export const Txt2ImgPage = ({
       )}
       output={null}
     >
+      {/* Batch Queue */}
+      <div className="mb-2">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setBatchExpanded((v) => !v)}
+            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white/25 transition-colors hover:text-white/50"
+          >
+            <ListOrdered className="h-3 w-3" />
+            Batch Queue
+            {parsedBatchPrompts.length > 0 && (
+              <span className="ml-1 rounded bg-violet-500/20 px-1.5 py-0.5 font-mono text-[8px] text-violet-400">
+                {parsedBatchPrompts.length}
+              </span>
+            )}
+          </button>
+          {batchProgress && (
+            <span className="animate-pulse font-mono text-[9px] text-violet-400">
+              {batchProgress.current} / {batchProgress.total}
+            </span>
+          )}
+        </div>
+        {batchExpanded && (
+          <div className="mt-2 space-y-2">
+            <textarea
+              value={batchRaw}
+              onChange={(e) => setBatchRaw(e.target.value)}
+              placeholder={"Paste prompts — one per line:\n\na portrait of a woman in red...\na sunset over mountains...\na cyberpunk cityscape..."}
+              disabled={!!batchProgress}
+              rows={6}
+              className="w-full resize-y rounded-lg border border-white/10 bg-black/30 p-2.5 font-mono text-[11px] text-white/70 placeholder:text-white/15 focus:border-violet-500/30 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+            />
+            {parsedBatchPrompts.length > 0 && (
+              <button
+                type="button"
+                onClick={handleBatchStart}
+                disabled={isGenerating}
+                className="w-full rounded-lg border border-violet-500/30 bg-violet-500/10 py-2 text-[10px] font-black uppercase tracking-widest text-violet-300 transition-all hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {isGenerating && batchProgress
+                  ? `Generating ${batchProgress.current} / ${batchProgress.total}…`
+                  : `Run Batch — ${parsedBatchPrompts.length} prompt${parsedBatchPrompts.length === 1 ? '' : 's'}`}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       <SimpleImageCockpit
         promptLabel={promptLabel}
         promptContext={promptContext}
