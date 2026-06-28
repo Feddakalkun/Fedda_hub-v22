@@ -206,11 +206,15 @@ export const Txt2ImgPage = ({
   const completionHandledRef = useRef(false);
   const submitRef = useRef<(promptText: string) => Promise<void>>();
   const onCompleteRef = useRef<(promptId: string, images?: Array<{ filename: string; subfolder: string; type: string }>) => void>();
+  const pendingPromptIdRef = useRef<string | null>(null);
 
   const parsedBatchPrompts = useMemo(
     () => batchRaw.split('\n').map((l) => l.trim()).filter(Boolean),
     [batchRaw]
   );
+
+  // Keep ref in sync so effects that depend only on execState can read the latest promptId
+  pendingPromptIdRef.current = pendingPromptId;
 
   // Auto-set size to original image dimensions for SDXL Inpaint Automask
   useEffect(() => {
@@ -385,10 +389,11 @@ export const Txt2ImgPage = ({
   }, [loraEntries.length, setLoraEntries, storageKey]);
 
   useEffect(() => {
-    if (execState !== 'done' || !pendingPromptId) return;
-    const promptId = pendingPromptId;
+    if (execState !== 'done') return;
+    const promptId = pendingPromptIdRef.current;
+    if (!promptId) return;
     onCompleteRef.current?.(promptId);
-  }, [execState, pendingPromptId]);
+  }, [execState]); // Only fires when execState transitions to 'done' — reading promptId via ref avoids spurious fires when a new promptId is set while execState is still 'done'
 
   // HTTP polling fallback — handles completion when WebSocket is unavailable
   useEffect(() => {
