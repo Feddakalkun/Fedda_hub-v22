@@ -259,10 +259,10 @@
   },
   "4851": {
     "inputs": {
-      "tile_size": 4096,
+      "tile_size": 512,
       "overlap": 64,
-      "temporal_size": 512,
-      "temporal_overlap": 64,
+      "temporal_size": 32,
+      "temporal_overlap": 8,
       "samples": [
         "4845",
         0
