@@ -2033,6 +2033,73 @@
             }
         }
     },
+    "wan22xxx-img2vid": {
+        "name": "WAN 2.2 XXX Img2Vid",
+        "filename": "wan22/WAN22XXX-img2video.json",
+        "description": "Animate a reference image with dual high/low noise WAN 2.2 14B fp8 pass — NSFW UMT5 encoder, Power LoRA slots.",
+        "inputs": {
+            "image": {
+                "node_id": "278",
+                "input_key": "image",
+                "type": "string",
+                "label": "Reference Image"
+            },
+            "prompt": {
+                "node_id": "265",
+                "input_key": "text",
+                "type": "string",
+                "label": "Prompt"
+            },
+            "negative": {
+                "node_id": "273",
+                "input_key": "text",
+                "type": "string",
+                "label": "Negative Prompt"
+            },
+            "seed": {
+                "node_ids": ["271", "272"],
+                "input_key": "noise_seed",
+                "type": "number",
+                "label": "Seed"
+            },
+            "aspect_ratio": {
+                "node_id": "314",
+                "input_key": "aspect_ratio",
+                "type": "string",
+                "label": "Aspect Ratio"
+            },
+            "direction": {
+                "node_id": "314",
+                "input_key": "direction",
+                "type": "string",
+                "label": "Direction"
+            },
+            "width": {
+                "node_id": "314",
+                "input_key": "width",
+                "type": "number",
+                "label": "Width"
+            },
+            "length": {
+                "node_id": "266",
+                "input_key": "value",
+                "type": "number",
+                "label": "Length"
+            },
+            "lora_high": {
+                "node_id": "480",
+                "input_key": "lora_1",
+                "type": "object",
+                "label": "High Noise LoRA"
+            },
+            "lora_low": {
+                "node_id": "479",
+                "input_key": "lora_1",
+                "type": "object",
+                "label": "Low Noise LoRA"
+            }
+        }
+    },
     "hunyuan-i2v": {
         "name": "HunyuanVideo I2V fp8",
         "filename": "hunyuan/HunyuanVideo-i2v.json",

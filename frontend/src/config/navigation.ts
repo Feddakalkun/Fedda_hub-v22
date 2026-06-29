@@ -48,6 +48,7 @@ export const SIDEBAR_SECTIONS: NavSection[] = [
         icon: Video,
         subitems: [
           { id: 'wan22-img2vid', label: 'WAN Img2Vid' },
+          { id: 'wan22xxx-img2vid', label: 'WAN XXX Img2Vid' },
           { id: 'wan22-vid2vid', label: 'WAN Vid2Vid' },
           { id: 'wan22-img2vid-6frames', label: 'WAN Story' },
           { id: 'wan21-steady-dancer', label: 'Steady Dancer' },
