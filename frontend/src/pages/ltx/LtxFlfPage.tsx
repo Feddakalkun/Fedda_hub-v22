@@ -10,7 +10,7 @@ import { comfyService } from '../../services/comfyService';
 import { FeddaButton, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
 import { WorkflowWorkbench } from '../../components/layout/WorkflowWorkbench';
 import { WorkflowVideoPreviewStrip } from '../../components/layout/WorkflowVideoPreviewStrip';
-import { LTX_RATIOS, getLtxDimensions, getSafeLtxAspect } from '../../config/ltx';
+import { LTX_RATIOS, LTX_RESOLUTIONS, getLtxDimensions, getSafeLtxAspect, type LtxResolution } from '../../config/ltx';
 
 function FrameSlot({ label, preview, uploading, onFile, onUrl }: {
   label: string;
@@ -72,6 +72,7 @@ function FrameSlot({ label, preview, uploading, onFile, onUrl }: {
 export const LtxFlfPage = () => {
   const [prompt, setPrompt] = usePersistentState('ltx_flf_prompt', '');
   const [aspectRatio, setAspectRatio] = usePersistentState('ltx_flf_ar', '16:9');
+  const [resolution, setResolution] = usePersistentState<LtxResolution>('ltx_flf_res', 'M');
   const [direction, setDirection] = usePersistentState('ltx_flf_dir', 'Horizontal');
   const [lengthSec, setLengthSec] = usePersistentState('ltx_flf_len', 5);
   const [seed, setSeed] = usePersistentState('ltx_flf_seed', -1);
@@ -148,7 +149,7 @@ export const LtxFlfPage = () => {
 
   const handleGenerate = () => {
     if (!firstFilename || !lastFilename || !prompt.trim() || run.isGenerating) return;
-    const dims = getLtxDimensions(aspectRatio);
+    const dims = getLtxDimensions(aspectRatio, resolution);
     const safeAspect = getSafeLtxAspect(aspectRatio);
     run.start({
       image_first: firstFilename,
@@ -244,8 +245,26 @@ export const LtxFlfPage = () => {
                 </button>
               ))}
             </div>
-            <div className="text-[10px] font-mono text-white/40">
-              Output size: {getLtxDimensions(aspectRatio).width}×{getLtxDimensions(aspectRatio).height} (×32)
+            <div className="flex items-center gap-2">
+              <span className="text-[8px] font-black uppercase tracking-widest text-white/25">Res</span>
+              <div className="flex gap-1">
+                {LTX_RESOLUTIONS.map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setResolution(r)}
+                    className={`rounded-lg border px-2.5 py-1 text-[8px] font-black uppercase tracking-wider transition-all ${
+                      resolution === r
+                        ? 'border-white/30 bg-white/[0.12] text-white'
+                        : 'border-white/[0.08] bg-white/[0.03] text-white/35 hover:text-white/65'
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <span className="font-mono text-[10px] text-white/40">
+                {getLtxDimensions(aspectRatio, resolution).width}×{getLtxDimensions(aspectRatio, resolution).height}
+              </span>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

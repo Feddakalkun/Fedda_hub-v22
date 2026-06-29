@@ -10,7 +10,7 @@ import { comfyService } from '../../services/comfyService';
 import { FeddaButton, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
 import { WorkflowWorkbench } from '../../components/layout/WorkflowWorkbench';
 import { WorkflowVideoPreviewStrip } from '../../components/layout/WorkflowVideoPreviewStrip';
-import { LTX_RATIOS, getLtxDimensions } from '../../config/ltx';
+import { LTX_RATIOS, LTX_RESOLUTIONS, getLtxDimensions, type LtxResolution } from '../../config/ltx';
 
 function RefImageSlot({ preview, uploading, onFile, onUrl }: {
   preview: string | null;
@@ -74,6 +74,7 @@ export const LtxImg2VidPage = () => {
   const [loraName, setLoraName] = usePersistentState('ltx_img2vid_lora_name', '');
   const [loraStrength, setLoraStrength] = usePersistentState('ltx_img2vid_lora_strength', 0.65);
   const [aspectRatio, setAspectRatio] = usePersistentState('ltx_img2vid_ar', '16:9');
+  const [resolution, setResolution] = usePersistentState<LtxResolution>('ltx_img2vid_res', 'M');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [imageFilename, setImageFilename] = usePersistentState<string | null>('ltx_img2vid_image_file', null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -169,7 +170,7 @@ export const LtxImg2VidPage = () => {
 
   const handleGenerate = () => {
     if (!imageFilename || !prompt.trim() || run.isGenerating) return;
-    const dims = getLtxDimensions(aspectRatio);
+    const dims = getLtxDimensions(aspectRatio, resolution);
     run.start({
       image: imageFilename,
       prompt: prompt.trim(),
@@ -298,9 +299,8 @@ export const LtxImg2VidPage = () => {
             )}
           </div>
 
-          {/* Stable aspect / resolution control for LTX (fixes constant 1:1 output) */}
           <div className="space-y-1.5 pt-1">
-            <p className="text-[8px] font-black uppercase tracking-widest text-white/25">Output Format (w×h snapped to ×32)</p>
+            <p className="text-[8px] font-black uppercase tracking-widest text-white/25">Output Format</p>
             <div className="flex flex-wrap gap-1">
               {ratios.map((r) => (
                 <button
@@ -314,8 +314,24 @@ export const LtxImg2VidPage = () => {
                 </button>
               ))}
             </div>
-            <div className="font-mono text-[9px] text-white/35">
-              {getLtxDimensions(aspectRatio).width}×{getLtxDimensions(aspectRatio).height}
+            <div className="flex items-center gap-2">
+              <span className="text-[8px] font-black uppercase tracking-widest text-white/25">Res</span>
+              <div className="flex gap-1">
+                {LTX_RESOLUTIONS.map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setResolution(r)}
+                    className={`rounded-md border px-2 py-0.5 text-[9px] font-black tracking-widest transition-all ${
+                      resolution === r ? 'border-white/30 bg-white/10 text-white' : 'border-white/10 bg-white/[0.02] text-white/40 hover:text-white/70'
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <span className="font-mono text-[9px] text-white/35">
+                {getLtxDimensions(aspectRatio, resolution).width}×{getLtxDimensions(aspectRatio, resolution).height}
+              </span>
             </div>
           </div>
         </div>
