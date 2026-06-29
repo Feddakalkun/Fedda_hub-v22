@@ -2033,6 +2033,73 @@
             }
         }
     },
+    "hunyuan-i2v": {
+        "name": "HunyuanVideo I2V fp8",
+        "filename": "hunyuan/HunyuanVideo-i2v.json",
+        "description": "Animate a reference image into video using HunyuanVideo I2V 720p fp8 — native ComfyUI I2V pipeline.",
+        "inputs": {
+            "image": {
+                "node_id": "8",
+                "input_key": "image",
+                "type": "string",
+                "label": "Reference Image"
+            },
+            "prompt": {
+                "node_id": "10",
+                "input_key": "prompt",
+                "type": "string",
+                "label": "Motion Prompt"
+            },
+            "negative": {
+                "node_id": "11",
+                "input_key": "text",
+                "type": "string",
+                "label": "Negative Prompt"
+            },
+            "seed": {
+                "node_id": "13",
+                "input_key": "value",
+                "type": "number",
+                "label": "Seed"
+            },
+            "aspect_ratio": {
+                "node_id": "17",
+                "input_key": "aspect_ratio",
+                "type": "string",
+                "label": "Aspect Ratio"
+            },
+            "direction": {
+                "node_id": "17",
+                "input_key": "direction",
+                "type": "string",
+                "label": "Direction"
+            },
+            "width": {
+                "node_id": "17",
+                "input_key": "width",
+                "type": "number",
+                "label": "Width"
+            },
+            "height": {
+                "node_id": "17",
+                "input_key": "height",
+                "type": "number",
+                "label": "Height"
+            },
+            "length": {
+                "node_id": "18",
+                "input_key": "value",
+                "type": "number",
+                "label": "Length (frames)"
+            },
+            "lora_slot1": {
+                "node_id": "4",
+                "input_key": "lora_1",
+                "type": "object",
+                "label": "LoRA (Slot 1)"
+            }
+        }
+    },
     "wan21-scail2": {
         "name": "WAN 2.1 SCAIL-2",
         "filename": "wan21/WAN-21-SCAIL-2.json",

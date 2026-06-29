@@ -19,6 +19,7 @@ import { Wan21Scail2Page } from './wan21/Wan21Scail2Page';
 import { LtxImg2VidPage } from './ltx/LtxImg2VidPage';
 import { LtxFlfPage } from './ltx/LtxFlfPage';
 import { IdeogramTxt2ImgPage } from './ideogram/IdeogramTxt2ImgPage';
+import { HunyuanImg2VidPage } from './hunyuan/HunyuanImg2VidPage';
 
 export const IMAGE_WORKFLOW_PAGES: Record<string, ComponentType> = {
   'z-image': ZImageTxt2Img,
@@ -53,4 +54,5 @@ export const VIDEO_WORKFLOW_PAGES: Record<string, ComponentType> = {
   'ltx': LtxImg2VidPage,
   'ltx-img2vid': LtxImg2VidPage,
   'ltx-flf': LtxFlfPage,
+  'hunyuan-i2v': HunyuanImg2VidPage,
 };
