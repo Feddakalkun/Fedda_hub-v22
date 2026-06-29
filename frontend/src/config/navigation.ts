@@ -54,6 +54,7 @@ export const SIDEBAR_SECTIONS: NavSection[] = [
           { id: 'wan21-scail2', label: 'SCAIL-2' },
           { id: 'ltx-img2vid', label: 'LTX Img2Vid' },
           { id: 'ltx-flf', label: 'LTX First / Last' },
+          { id: 'hunyuan-i2v', label: 'Hunyuan I2V' },
         ],
       },
     ],
