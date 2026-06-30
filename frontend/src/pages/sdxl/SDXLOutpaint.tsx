@@ -13,7 +13,7 @@ export const SDXLOutpaint = () => {
       storageKey="sdxl_outpaint"
       workflowId="sdxl-outpaint"
       familyLabel="SDXL OUTPAINT"
-      promptContext="zimage"
+      promptContext="sdxl-outpaint"
       accent="emerald"
       loraPrefixes={['sdxl/']}
       loraPacks={['sdxl']}

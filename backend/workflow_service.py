@@ -151,14 +151,8 @@ class WorkflowService:
         for param_key, param_value in effective_params.items():
             if param_key in mapping["inputs"]:
                 input_info = mapping["inputs"][param_key]
-                node_ids_raw = input_info.get("node_ids")
-                if isinstance(node_ids_raw, list) and node_ids_raw:
-                    target_node_ids = [str(n) for n in node_ids_raw]
-                else:
-                    target_node_ids = [str(input_info["node_id"])]
-                
-                logger.debug("  Injecting %r -> nodes %s", param_key, target_node_ids)
 
+                # nsfw_toggle has no node_id — handle it before computing target_node_ids
                 if input_info.get("type") == "nsfw_toggle":
                     # When NSFW is disabled, turn off all non-base LoRA slots in every
                     # Power Lora Loader node (lora_1 is always the base WAN model LoRA).
@@ -175,6 +169,14 @@ class WorkflowService:
                     else:
                         logger.debug("NSFW enabled -- workflow LoRA slots unchanged")
                     continue
+
+                node_ids_raw = input_info.get("node_ids")
+                if isinstance(node_ids_raw, list) and node_ids_raw:
+                    target_node_ids = [str(n) for n in node_ids_raw]
+                else:
+                    target_node_ids = [str(input_info["node_id"])]
+
+                logger.debug("  Injecting %r -> nodes %s", param_key, target_node_ids)
 
                 if input_info.get("type") == "loras" and isinstance(param_value, list):
                     # Safety filter for FLUX2-Klein: only allow LoRAs trained for this specific model

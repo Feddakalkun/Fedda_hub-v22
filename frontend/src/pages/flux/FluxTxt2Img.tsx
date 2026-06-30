@@ -6,7 +6,7 @@ export const FluxTxt2Img = () => {
       storageKey="flux_txt2img"
       workflowId="flux2klein-txt2img"
       familyLabel="FLUX2-KLEIN"
-      promptContext="zimage"
+      promptContext="flux2-klein"
       accent="violet"
       // Only allow LoRAs specifically trained for FLUX.2-klein.
       // FLUX.1-dev LoRAs have incompatible dimensions and will cause matmul errors.

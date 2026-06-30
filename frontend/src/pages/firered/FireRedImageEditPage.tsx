@@ -12,7 +12,7 @@ export const FireRedImageEditPage = () => {
       storageKey="firered_image_edit"
       workflowId="firered-image-edit"
       familyLabel="FireRed Edit"
-      promptContext="zimage"
+      promptContext="firered"
       accent="emerald"
       loraPrefixes={[]}
       loraPacks={[]}

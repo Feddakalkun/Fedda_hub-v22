@@ -3,7 +3,7 @@ import { Activity, BrainCircuit, Loader2, Trash2, Zap, DownloadCloud, Play, KeyR
 import { useComfyStatus } from '../../hooks/useComfyStatus';
 import { useOllamaStatus } from '../../hooks/useOllamaStatus';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
-import { BACKEND_API, COMFY_API } from '../../config/api';
+import { BACKEND_API } from '../../config/api';
 
 export const TopSystemStrip = () => {
   const comfy = useComfyStatus(3000);
@@ -31,10 +31,10 @@ export const TopSystemStrip = () => {
         if (r.ok && mounted) setGpuStats(await r.json());
       } catch {}
 
-      // ComfyUI VRAM stats — only when online
+      // ComfyUI VRAM stats — always via Vite proxy path to avoid CORS
       if (comfy.isConnected) {
         try {
-          const r = await fetch(`${COMFY_API.BASE_URL}/system_stats`, { cache: 'no-store' });
+          const r = await fetch('/comfy/system_stats', { cache: 'no-store' });
           if (r.ok && mounted) setComfyStats(await r.json());
         } catch {}
       } else {
@@ -79,18 +79,31 @@ export const TopSystemStrip = () => {
   }, []);
 
   const gpu = useMemo(() => {
+    // Primary: nvidia-smi via our backend (always available, memory in MiB)
+    if (gpuStats?.gpu) {
+      const g = gpuStats.gpu;
+      const usedMiB = g.memory?.used ?? 0;
+      const totalMiB = g.memory?.total ?? 0;
+      return {
+        name: String(g.name || '').replace('NVIDIA GeForce ', ''),
+        usedGiB: (usedMiB / 1024).toFixed(1),
+        totalGiB: (totalMiB / 1024).toFixed(1),
+        pct: Math.round(g.memory?.percentage ?? 0),
+        temp: g.temperature ?? null,
+      };
+    }
+    // Fallback: ComfyUI system_stats (memory in bytes)
     if (!comfyStats?.devices?.length) return null;
     const d = comfyStats.devices[0];
     const total = Number(d.vram_total || 0);
     const free = Number(d.vram_free || 0);
     const used = Math.max(0, total - free);
-    const pct = total > 0 ? Math.round((used / total) * 100) : 0;
     return {
       name: String(d.name || '').replace('NVIDIA GeForce ', ''),
       usedGiB: (used / 1024 ** 3).toFixed(1),
       totalGiB: (total / 1024 ** 3).toFixed(1),
-      pct,
-      temp: gpuStats?.gpu?.temperature ?? null,
+      pct: total > 0 ? Math.round((used / total) * 100) : 0,
+      temp: null,
     };
   }, [comfyStats, gpuStats]);
 
@@ -99,7 +112,7 @@ export const TopSystemStrip = () => {
     if (!confirm('Purge VRAM? This stops active generation and unloads all models.')) return;
     setPurging(true);
     try {
-      await fetch(`${COMFY_API.BASE_URL}/free`, { method: 'POST',
+      await fetch('/comfy/free', { method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ unload_models: true, free_memory: true }),
       });

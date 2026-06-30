@@ -20,7 +20,18 @@ import { Wand2, Sparkles, Loader2, ImageIcon, X } from 'lucide-react';
 import { BACKEND_API } from '../../config/api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-export type PromptContext = 'zimage' | 'ltx-img2vid' | 'ltx-flf' | 'ltx-lipsync' | 'wan-scene';
+export type PromptContext =
+  | 'zimage'
+  | 'ltx-img2vid' | 'ltx-flf' | 'ltx-lipsync'
+  | 'wan-scene' | 'wan-i2v' | 'wan-story'
+  | 'hunyuan-i2v'
+  | 'flux2-klein'
+  | 'chroma'
+  | 'qwen'
+  | 'firered'
+  | 'ideogram'
+  | 'sdxl-inpaint' | 'sdxl-outpaint' | 'sdxl-depth' | 'sdxl-openpose'
+  | 'steady-dancer';
 export type AccentColor   = 'emerald' | 'violet' | 'sky';
 
 interface PromptAssistantProps {

@@ -16,7 +16,7 @@ export const ChromaTxt2Img = () => {
       storageKey="chroma_txt2img"
       workflowId="chroma1-hd-txt2img"
       familyLabel="Chroma1-HD"
-      promptContext="zimage"
+      promptContext="chroma"
       accent="emerald"
       loraPrefixes={[]}
       loraPacks={[]}
@@ -39,7 +39,7 @@ export const ChromaSimpleTxt2Img = () => {
       storageKey="chroma_simple_txt2img"
       workflowId="chroma-simple-txt2img"
       familyLabel="Chroma Simple"
-      promptContext="zimage"
+      promptContext="chroma"
       accent="emerald"
       loraPrefixes={[]}
       loraPacks={[]}

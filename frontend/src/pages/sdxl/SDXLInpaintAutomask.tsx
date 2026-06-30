@@ -13,7 +13,7 @@ export const SDXLInpaintAutomask = () => {
       storageKey="sdxl_inpaint_automask"
       workflowId="sdxl-inpaint-automask"
       familyLabel="SDXL INPAINT AUTOMASK"
-      promptContext="zimage"
+      promptContext="sdxl-inpaint"
       accent="emerald"
       loraPrefixes={['sdxl/']}
       loraPacks={['sdxl']}

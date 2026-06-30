@@ -89,6 +89,29 @@ export const useWorkflowRun = ({
       .catch(() => toast(readyMessage, 'success'));
   }, [collectUrls, execState, outputKind, pendingPromptId, readyMessage, toast]);
 
+  // HTTP fallback polling — handles completion when WebSocket is unavailable (e.g. ComfyUI 403 on origin mismatch)
+  useEffect(() => {
+    if (!pendingPromptId) return;
+    const capturedId = pendingPromptId;
+    const id = setInterval(async () => {
+      try {
+        const resp = await fetch(
+          `${BACKEND_API.BASE_URL}${BACKEND_API.ENDPOINTS.GENERATE_STATUS}/${capturedId}`
+        );
+        const data = await resp.json() as GenerateStatusResponse;
+        if (data.status !== 'completed') return;
+        clearInterval(id);
+        setIsGenerating(false);
+        setPendingPromptId(null);
+        if (outputKind === 'video' && data.videos?.length) {
+          collectUrls(data.videos.map(outputUrl));
+        }
+        toast(readyMessage, 'success');
+      } catch {}
+    }, 5000);
+    return () => clearInterval(id);
+  }, [pendingPromptId, collectUrls, outputKind, readyMessage, toast]);
+
   const start = useCallback(async (params: Record<string, unknown>, options: StartWorkflowOptions = {}) => {
     if (isGenerating) return null;
 

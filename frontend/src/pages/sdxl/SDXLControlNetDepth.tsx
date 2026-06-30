@@ -13,7 +13,7 @@ export const SDXLControlNetDepth = () => {
       storageKey="sdxl_controlnet_depth"
       workflowId="sdxl-controlnet-depth"
       familyLabel="SDXL ControlNet Depth"
-      promptContext="zimage"
+      promptContext="sdxl-depth"
       accent="violet"
       loraPrefixes={['sdxl/']}
       loraPacks={['sdxl']}

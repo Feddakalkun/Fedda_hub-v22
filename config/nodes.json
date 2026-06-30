@@ -312,5 +312,17 @@
     "url": "https://github.com/M1kep/ComfyLiterals.git",
     "folder": "ComfyLiterals",
     "note": "PrimitiveInt, JsonExtractString, StringReplace — primitive pass-through and JSON utility nodes (required for Ideogram workflow)"
+  },
+  {
+    "name": "ComfyUI_tinyterraNodes",
+    "url": "https://github.com/TinyTerra/ComfyUI_tinyterraNodes.git",
+    "folder": "ComfyUI_tinyterraNodes",
+    "note": "TT_PipeNodes pipeline bus, TT_Sampler, TT_Seed — workflow organization and pipe-passing nodes"
+  },
+  {
+    "name": "cg-use-everywhere",
+    "url": "https://github.com/chrisgoringe/cg-use-everywhere.git",
+    "folder": "cg-use-everywhere",
+    "note": "Anything Everywhere, Prompt Everywhere, Seed Everywhere — broadcast outputs to all matching inputs without explicit wires"
   }
 ]

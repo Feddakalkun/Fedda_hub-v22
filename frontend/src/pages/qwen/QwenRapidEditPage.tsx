@@ -96,7 +96,7 @@ export const QwenRapidEditPage = () => {
       storageKey="qwen_rapid_edit_v23"
       workflowId="qwen-rapid-edit-v23"
       familyLabel="Qwen Rapid Edit"
-      promptContext="zimage"
+      promptContext="qwen"
       accent="emerald"
       loraPrefixes={[]}
       loraPacks={[]}

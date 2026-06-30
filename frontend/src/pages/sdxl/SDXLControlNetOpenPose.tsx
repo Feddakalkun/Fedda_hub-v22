@@ -13,7 +13,7 @@ export const SDXLControlNetOpenPose = () => {
       storageKey="sdxl_controlnet_openpose"
       workflowId="sdxl-controlnet-openpose"
       familyLabel="SDXL ControlNet OpenPose"
-      promptContext="zimage"
+      promptContext="sdxl-openpose"
       accent="violet"
       loraPrefixes={['sdxl/']}
       loraPacks={['sdxl']}

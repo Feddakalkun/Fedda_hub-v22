@@ -16,7 +16,7 @@ export const QwenImageReferencePage = () => {
       storageKey="qwen_image_ref"
       workflowId="qwen-edit-2509-image-reference"
       familyLabel="Qwen Image Reference"
-      promptContext="zimage"
+      promptContext="qwen"
       accent="emerald"
       loraPrefixes={['qwen/']}
       loraPacks={[]}
