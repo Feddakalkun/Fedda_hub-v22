@@ -6,6 +6,7 @@ import { useToast } from '../../components/ui/Toast';
 import { BACKEND_API } from '../../config/api';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { useWorkflowRun } from '../../hooks/useWorkflowRun';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 import { comfyService } from '../../services/comfyService';
 import { FeddaButton, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
 import { WorkflowWorkbench } from '../../components/layout/WorkflowWorkbench';
@@ -132,6 +133,13 @@ export const LtxImg2VidPage = () => {
       setImageUploading(false);
     }
   };
+
+  // Consume a "Send to Workflow" handoff image on first mount
+  useEffect(() => {
+    const url = consumeHandoff('image');
+    if (url) uploadImageFromUrl(url);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const buildPromptFromReference = async () => {
     if (!imageFilename || !imagePreview || referenceCaptioning) return;

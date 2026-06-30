@@ -8,6 +8,7 @@ import { BACKEND_API } from '../../config/api';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 import { PromptAssistant } from '../../components/ui/PromptAssistant';
 import { LoraSelector } from '../../components/ui/LoraSelector';
 import { FeddaButton, FeddaPanel, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
@@ -182,6 +183,28 @@ export const Wan22Vid2Vid = () => {
       setUploading(false);
     }
   };
+
+  const uploadFromUrl = async (url: string) => {
+    setUploading(true);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], 'handoff-video.mp4', { type: blob.type || 'video/mp4' });
+      const form = new FormData();
+      form.append('file', file);
+      const upload = await fetch(`${BACKEND_API.BASE_URL}/api/upload`, { method: 'POST', body: form });
+      const data = await upload.json();
+      if (!data.success) throw new Error(data.detail || 'Upload failed');
+      setUploadedVideoName(data.filename);
+    } catch (err: any) { toast(err.message || 'Upload failed', 'error'); }
+    finally { setUploading(false); }
+  };
+
+  useEffect(() => {
+    const url = consumeHandoff('video');
+    if (url) uploadFromUrl(url);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Video player ──────────────────────────────────────────────────────────
   const onVideoLoaded = () => {

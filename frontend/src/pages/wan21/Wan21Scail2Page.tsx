@@ -7,6 +7,7 @@ import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
 import { WorkflowShell } from '../../components/layout/WorkflowShell';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 import { triggerMediaDownload } from '../../utils/mediaStore';
 import { inputBase, panel, cn } from '../../lib/styles';
 import { Field, NeutralButton } from '../../components/ui/FeddaPrimitives';
@@ -346,6 +347,26 @@ export function Wan21Scail2Page() {
       setUploadingVideo(false);
     }
   };
+
+  // Consume a "Send to Workflow" handoff — video → motion clip, image → reference
+  useEffect(() => {
+    const videoUrl = consumeHandoff('video');
+    if (videoUrl) {
+      fetch(videoUrl)
+        .then((r) => r.blob())
+        .then((blob) => handleVideoUpload(new File([blob], 'handoff-motion.mp4', { type: blob.type || 'video/mp4' })))
+        .catch(() => {});
+      return;
+    }
+    const imageUrl = consumeHandoff('image');
+    if (imageUrl) {
+      fetch(imageUrl)
+        .then((r) => r.blob())
+        .then((blob) => handleImageUpload(new File([blob], 'handoff-reference.png', { type: blob.type || 'image/png' })))
+        .catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runScail2 = async () => {
     if (!canRun) return;

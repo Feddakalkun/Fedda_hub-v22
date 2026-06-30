@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Expand, Loader2 } from 'lucide-react';
 import { Lightbox } from '../ui/Lightbox';
+import { SendToWorkflowMenu } from '../ui/SendToWorkflowMenu';
 
 interface WorkflowPreviewBarProps {
   title?: string;
@@ -83,8 +84,11 @@ export const WorkflowPreviewBar = ({
                     title={`Preview ${idx + 1}`}
                   >
                     <img src={url} alt={`Preview ${idx + 1}`} />
-                    <span className="workflow-preview-thumb-action">
+                    <span className="workflow-preview-thumb-action flex items-center gap-1">
                       <Expand className="h-2.5 w-2.5" />
+                      <span onClick={(e) => e.stopPropagation()}>
+                        <SendToWorkflowMenu url={url} kind="image" compact />
+                      </span>
                     </span>
                     {isLive && (
                       <span className="workflow-preview-thumb-live">

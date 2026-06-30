@@ -1,4 +1,4 @@
-﻿import { Bot, Film, Images, LayoutDashboard, Sparkles, Video, Volume2, Heart, type LucideIcon } from 'lucide-react';
+﻿import { Bot, Download, Film, Images, LayoutDashboard, Sparkles, Video, Volume2, Heart, type LucideIcon } from 'lucide-react';
 
 export type ModulePack = 'core' | 'booster';
 export type ModuleArea = 'home' | 'image' | 'video' | 'system';
@@ -146,6 +146,18 @@ export const FEDDA_MODULES: FeddaModule[] = [
     tabs: ['zonos-tts'],
     defaultTab: 'zonos-tts',
     Icon: Volume2,
+  },
+  {
+    id: 'media-downloader',
+    sourceModuleId: 'core-shell',
+    label: 'Media Downloader',
+    description: 'Download TikTok, YouTube, Instagram and any yt-dlp URL. Send videos directly to WAN or LTX workflows.',
+    area: 'home',
+    pack: 'core',
+    tabs: ['media-downloader'],
+    defaultTab: 'media-downloader',
+    Icon: Download,
+    card: {},
   },
   {
     id: 'companion',

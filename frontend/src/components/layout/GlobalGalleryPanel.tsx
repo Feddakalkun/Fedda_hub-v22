@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Download, ExternalLink, Images, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { loadStoredMedia, triggerMediaDownload, type MediaItem } from '../../utils/mediaStore';
+import { SendToWorkflowMenu } from '../ui/SendToWorkflowMenu';
 
 const GALLERY_WIDTH_KEY = 'fedda_gallery_panel_width';
 const GALLERY_COLLAPSED_KEY = 'fedda_gallery_panel_collapsed';
@@ -54,6 +55,9 @@ function GalleryThumb({ item }: { item: MediaItem }) {
             >
               <Download className="h-2.5 w-2.5" />
             </button>
+            <span onClick={(e) => e.stopPropagation()}>
+              <SendToWorkflowMenu url={item.url} kind={item.kind} compact />
+            </span>
           </div>
         </div>
       )}

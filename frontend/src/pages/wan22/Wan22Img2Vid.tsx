@@ -8,6 +8,7 @@ import { BACKEND_API } from '../../config/api';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 import { PromptAssistant } from '../../components/ui/PromptAssistant';
 import { LoraSelector } from '../../components/ui/LoraSelector';
 import { FeddaButton, FeddaPanel, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
@@ -111,6 +112,30 @@ export const Wan22Img2Vid = () => {
     } catch (err: any) { toast(err.message || 'Upload failed', 'error'); }
     finally { setUploading(false); }
   };
+
+  // ── Upload from URL ───────────────────────────────────────────────────────
+  const uploadFromUrl = async (url: string) => {
+    setUploading(true);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], 'handoff-image.png', { type: blob.type || 'image/png' });
+      const form = new FormData();
+      form.append('file', file);
+      const upload = await fetch(`${BACKEND_API.BASE_URL}/api/upload`, { method: 'POST', body: form });
+      const data = await upload.json();
+      if (!data.success) throw new Error(data.detail || 'Upload failed');
+      setUploadedImageName(data.filename);
+    } catch (err: any) { toast(err.message || 'Upload failed', 'error'); }
+    finally { setUploading(false); }
+  };
+
+  // Consume a "Send to Workflow" handoff image on first mount
+  useEffect(() => {
+    const url = consumeHandoff('image');
+    if (url) uploadFromUrl(url);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Stream videos ─────────────────────────────────────────────────────────
   useEffect(() => {

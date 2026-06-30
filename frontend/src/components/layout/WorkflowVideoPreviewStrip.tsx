@@ -1,5 +1,6 @@
 import { Download, ExternalLink, Loader2, Video } from 'lucide-react';
 import { triggerMediaDownload } from '../../utils/mediaStore';
+import { SendToWorkflowMenu } from '../ui/SendToWorkflowMenu';
 
 interface WorkflowVideoPreviewStripProps {
   title?: string;
@@ -36,6 +37,7 @@ export const WorkflowVideoPreviewStrip = ({
               <button onClick={() => triggerMediaDownload(currentVideo, 'fedda-video-latest.mp4')} title="Download output">
                 <Download className="h-3.5 w-3.5" />
               </button>
+              <SendToWorkflowMenu url={currentVideo} kind="video" compact />
             </div>
           ) : null}
         </div>

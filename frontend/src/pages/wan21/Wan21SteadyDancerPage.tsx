@@ -17,6 +17,7 @@ import { useToast } from '../../components/ui/Toast';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 import { WorkflowShell } from '../../components/layout/WorkflowShell';
 import { triggerMediaDownload } from '../../utils/mediaStore';
 import { inputBase, smallLabel, panel, cn } from '../../lib/styles';
@@ -454,6 +455,26 @@ export function Wan21SteadyDancerPage() {
       setUploadingMotion(false);
     }
   };
+
+  // Consume a "Send to Workflow" handoff — video → motion clip, image → subject
+  useEffect(() => {
+    const videoUrl = consumeHandoff('video');
+    if (videoUrl) {
+      fetch(videoUrl)
+        .then((r) => r.blob())
+        .then((blob) => uploadMotion(new File([blob], 'handoff-motion.mp4', { type: blob.type || 'video/mp4' })))
+        .catch(() => {});
+      return;
+    }
+    const imageUrl = consumeHandoff('image');
+    if (imageUrl) {
+      fetch(imageUrl)
+        .then((r) => r.blob())
+        .then((blob) => uploadSubject(new File([blob], 'handoff-subject.png', { type: blob.type || 'image/png' })))
+        .catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const downloadMotion = async () => {
     if (!sourceUrl.trim()) return;

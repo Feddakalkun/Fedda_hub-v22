@@ -84,6 +84,7 @@ export const BACKEND_API = {
         GENERATE: '/api/generate',
         GENERATE_STATUS: '/api/generate/status',
         LORA_LIST: '/api/lora/list',
+        MEDIA_DOWNLOAD_VIDEO: '/api/media/download-video',
     },
 };
 

@@ -9,6 +9,7 @@ import { BACKEND_API } from '../../config/api';
 import { useComfyExecution } from '../../contexts/ComfyExecutionContext';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { comfyService } from '../../services/comfyService';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 
 const PRESETS = [
   { label: '1:1', w: 1024, h: 1024 },
@@ -446,6 +447,21 @@ export const Txt2ImgPage = ({
       setUploadingImage(false);
     }
   };
+
+  // Consume a "Send to Workflow" handoff image on first mount
+  useEffect(() => {
+    if (!requireImageUpload) return;
+    const url = consumeHandoff('image');
+    if (!url) return;
+    fetch(url)
+      .then((r) => r.blob())
+      .then((blob) => {
+        const file = new File([blob], 'handoff-image.png', { type: blob.type || 'image/png' });
+        return handleUploadImage(file);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Core API submission — called by both single generate and batch runner
   const _submitGeneration = async (promptText: string) => {

@@ -7,6 +7,7 @@ import { BACKEND_API } from '../../config/api';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { useWorkflowRun } from '../../hooks/useWorkflowRun';
 import { comfyService } from '../../services/comfyService';
+import { consumeHandoff } from '../../utils/workflowHandoff';
 import { FeddaButton, FeddaSectionTitle } from '../../components/ui/FeddaPrimitives';
 import { WorkflowWorkbench } from '../../components/layout/WorkflowWorkbench';
 import { WorkflowVideoPreviewStrip } from '../../components/layout/WorkflowVideoPreviewStrip';
@@ -154,6 +155,13 @@ export const Wan22XxxImg2VidPage = () => {
       setImageUploading(false);
     }
   };
+
+  // Consume a "Send to Workflow" handoff image on first mount
+  useEffect(() => {
+    const url = consumeHandoff('image');
+    if (url) uploadFromUrl(url);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGenerate = () => {
     if (!imageFilename || !prompt.trim() || run.isGenerating) return;
